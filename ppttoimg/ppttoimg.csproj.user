@@ -1,0 +1,6 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
+    <StartArguments>l:\ppttest1\526052-57fcbeaa8718c.ppt l:\outtxt 1000 10003</StartArguments>
+  </PropertyGroup>
+</Project>
