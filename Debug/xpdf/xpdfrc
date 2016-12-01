@@ -3,9 +3,9 @@ textEncoding		UTF-8
 textPageBreaks      no 
 
 cidToUnicode	Adobe-GB1	D:/MyCode/zhubajie/ConvertService/docConvertServer/Debug/xpdf/xpdf-chinese-simplified/Adobe-GB1.cidToUnicode
-unicodeMap	ISO-2022-CN	D:/MyCode/zhubajie/ConvertService/docConvertServer/xpdf/xpdf-chinese-simplified/ISO-2022-CN.unicodeMap
-unicodeMap	EUC-CN		D:/MyCode/zhubajie/ConvertService/docConvertServer/xpdf/xpdf-chinese-simplified/EUC-CN.unicodeMap
-unicodeMap	GBK		D:/MyCode/zhubajie/ConvertService/docConvertServer/xpdf/xpdf-chinese-simplified/GBK.unicodeMap
-cMapDir		Adobe-GB1	D:/MyCode/zhubajie/ConvertService/docConvertServer/xpdf/xpdf-chinese-simplified/CMap
-toUnicodeDir			D:/MyCode/zhubajie/ConvertService/docConvertServer/xpdf/xpdf-chinese-simplified/CMap
-fontFileCC	Adobe-GB1	D:/MyCode/zhubajie/ConvertService/docConvertServer/xpdf/xpdf-chinese-simplified/CMap/fs_GB2312.ttf
+unicodeMap	ISO-2022-CN	D:/MyCode/zhubajie/ConvertService/docConvertServer/Debug/xpdf/xpdf-chinese-simplified/ISO-2022-CN.unicodeMap
+unicodeMap	EUC-CN		D:/MyCode/zhubajie/ConvertService/docConvertServer/Debug/xpdf/xpdf-chinese-simplified/EUC-CN.unicodeMap
+unicodeMap	GBK		D:/MyCode/zhubajie/ConvertService/docConvertServer/Debug/xpdf/xpdf-chinese-simplified/GBK.unicodeMap
+cMapDir		Adobe-GB1	D:/MyCode/zhubajie/ConvertService/docConvertServer/Debug/xpdf/xpdf-chinese-simplified/CMap
+toUnicodeDir			D:/MyCode/zhubajie/ConvertService/docConvertServer/Debug/xpdf/xpdf-chinese-simplified/CMap
+fontFileCC	Adobe-GB1	D:/MyCode/zhubajie/ConvertService/docConvertServer/Debug/xpdf/xpdf-chinese-simplified/CMap/fs_GB2312.ttf

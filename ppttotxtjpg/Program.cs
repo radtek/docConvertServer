@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
+// using System.Linq;
 using System.Drawing;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
+// using System.Threading.Tasks;
 using System.Threading;
 using Aspose.Slides;
 using EPocalipse.IFilter;
@@ -74,7 +74,7 @@ namespace ppttotxtjpg
 
             if(istoimg == 1)
             {
-                Crack();
+                 Crack();
             }
             //判断文件页数
             Presentation ppt = null;
@@ -94,8 +94,8 @@ namespace ppttotxtjpg
                 }
                 catch (Exception e)
                 {
-                    PostThreadMessage(threadid, WM_MSG_PPT2TXT_STATUS, (int)OutStatus.TotxtFailed, pages);
-                    return;
+//                     PostThreadMessage(threadid, WM_MSG_PPT2TXT_STATUS, (int)OutStatus.TotxtFailed, pages);
+                    istoimg = 0;
                 }
             }
 

@@ -94,8 +94,12 @@ int CConvertThread::Run()
 			{
 				filepath = BuildFilePath(pConvert->softlink, domain);
 			}
+			if (NULL == domain)
+			{
+				AfxMessageBox(L"域名配置对应表没有配置此域名，请配置后重启程序！");
+			}
 			//判断文件是否存在
-			if (filepath != NULL && IsFileExist(filepath))
+			if (filepath != NULL && IsFileExist(filepath) && domain)
 			{
 				//文件存在
 				char *outtxtpath = BuildOutPath(domain->txtpath, pConvert->fileid);
@@ -179,6 +183,7 @@ int CConvertThread::Run()
 				//文件不存在
 				pConverted->txtstatus = 1;
 				pConverted->pagenumber = 0;
+				SendMsgShow(pConverted, MSG_LISTCTRL_UPDATE, FileLoss);
 				g_mtxConvertFailed.Lock();
 				g_ltConvertFailed.push_back(pConverted);
 				g_mtxConvertFailed.Unlock();

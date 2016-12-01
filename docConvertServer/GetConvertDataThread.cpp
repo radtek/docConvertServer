@@ -59,7 +59,7 @@ int CGetConvertDataThread::Run()
 	g_mtxConvert.Unlock();
 
 	int times = 6;
-	while (WaitForSingleObject(m_hKillEvent,500) != WAIT_OBJECT_0 )
+	while (WaitForSingleObject(m_hKillEvent,100) != WAIT_OBJECT_0 )
 	{
 		if (m_bAbort) break;
 

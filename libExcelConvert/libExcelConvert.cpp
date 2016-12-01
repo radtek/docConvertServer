@@ -62,7 +62,7 @@ extern "C" {
 		DWORD nthreadId;
 		HANDLE hthread = StartListenToTxtStatusThread(&nthreadId, pst);
 
-		char paramstr[1024] = { 0 };
+		char paramstr[2000] = { 0 };
 		STARTUPINFOA si = { sizeof(si) };
 		PROCESS_INFORMATION pi;
 		si.cb = sizeof(STARTUPINFO);
@@ -74,7 +74,7 @@ extern "C" {
 		si.cbReserved2 = NULL;
 		si.lpReserved2 = NULL;
 
-		sprintf_s(paramstr, "exceltotxt.exe %s %s %d %d %d %d", file, outpath, nthreadId, fileid, minPage, txtSize);
+		sprintf_s(paramstr, 2000, "exceltotxt.exe %s %s %d %d %d %d", file, outpath, nthreadId, fileid, minPage, txtSize);
 
 		COleDateTime bTime = COleDateTime::GetCurrentTime();
 		BOOL bConvertTimeOut = FALSE;
@@ -180,7 +180,7 @@ extern "C" {
 		DWORD nthreadId;
 		HANDLE hthread = StartListenToImgStatusThread(&nthreadId, pst);
 
-		char paramstr[1024] = { 0 };
+		char paramstr[2000] = { 0 };
 		STARTUPINFOA si = { sizeof(si) };
 		PROCESS_INFORMATION pi;
 		si.cb = sizeof(STARTUPINFO);
@@ -192,7 +192,7 @@ extern "C" {
 		si.cbReserved2 = NULL;
 		si.lpReserved2 = NULL;
 
-		sprintf_s(paramstr, "exceltoimg.exe %s %s %d %d", file, outpath, nthreadId, fileid);
+		sprintf_s(paramstr, 2000, "exceltoimg.exe %s %s %d %d", file, outpath, nthreadId, fileid);
 
 		COleDateTime bTime = COleDateTime::GetCurrentTime();
 		BOOL bConvertTimeOut = FALSE;
@@ -305,7 +305,7 @@ extern "C" {
 		DWORD nthreadId;
 		HANDLE hthread = StartListenToTxtPngStatusThread(&nthreadId, pst);
 
-		char paramstr[1024] = { 0 };
+		char paramstr[2000] = { 0 };
 		STARTUPINFOA si = { sizeof(si) };
 		PROCESS_INFORMATION pi;
 		si.cb = sizeof(STARTUPINFO);
@@ -317,7 +317,7 @@ extern "C" {
 		si.cbReserved2 = NULL;
 		si.lpReserved2 = NULL;
 
-		sprintf_s(paramstr, "exceltotxtpng.exe %s %s %s %d %d %d %d %d %d", file, outtxtpath, outimgpath, nthreadId, fileid, minPage, txtSize, istoimg, isoriginal);
+		sprintf_s(paramstr, 2000, "exceltotxtpng.exe %s %s %s %d %d %d %d %d %d", file, outtxtpath, outimgpath, nthreadId, fileid, minPage, txtSize, istoimg, isoriginal);
 
 		COleDateTime bTime = COleDateTime::GetCurrentTime();
 		BOOL bConvertTimeOut = FALSE;

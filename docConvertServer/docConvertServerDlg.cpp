@@ -130,6 +130,7 @@ BEGIN_MESSAGE_MAP(CdocConvertServerDlg, CDialogEx)
 	ON_BN_CLICKED(IDC_CK_DELSRC, &CdocConvertServerDlg::OnBnClickedCkDelsrc)
 	ON_WM_DESTROY()
 	ON_BN_CLICKED(IDC_BT_CLEARSQLITE, &CdocConvertServerDlg::OnBnClickedBtClearsqlite)
+	ON_MESSAGE(MSG_MSG_LOG, &CdocConvertServerDlg::OnMsgMsgLog)
 END_MESSAGE_MAP()
 
 
@@ -170,6 +171,10 @@ BOOL CdocConvertServerDlg::OnInitDialog()
 
 	curl_global_init(CURL_GLOBAL_ALL);
 
+	wchar_t wp[100] = {};
+	wsprintf(wp, L"docConvertServer--%d", g_nMultiProcessId);
+	this->SetWindowTextW(wp);
+
 	InitListCtrl();
 	InitListCtrlDomain();
 
@@ -184,6 +189,12 @@ BOOL CdocConvertServerDlg::OnInitDialog()
 	m_wndTabCtrl.InsertItem(1, L"设置");
 
 	m_wndTabCtrl.SetCurSel(0);
+
+
+	if (g_bAutoStart)
+	{
+		OnBnClickedStart();
+	}
 
 	return TRUE;  // 除非将焦点设置到控件，否则返回 TRUE
 }
@@ -293,6 +304,7 @@ void CdocConvertServerDlg::ReadIni()
 	g_bIsDownFile = ::GetPrivateProfileIntA("CONFIG", "ISDOWNFILE", 0, g_strInifile) != 0 ? TRUE : FALSE;
 	g_bIsToImg = ::GetPrivateProfileIntA("CONFIG", "ISTOIMG", 0, g_strInifile) != 0 ? TRUE : FALSE;
 	g_nMaxFileInFloder = ::GetPrivateProfileIntA("CONFIG", "MAXFILENUM", 1000, g_strInifile);
+	g_bAutoStart = ::GetPrivateProfileIntA("CONFIG", "AUTOSTART", 1, g_strInifile) != 0 ? TRUE : FALSE;
 
 	m_strGetApi = CharToCString(g_strApiUrl);
 	m_strSuccessApi = CharToCString(g_strSuccessUrl);
@@ -957,7 +969,10 @@ void CdocConvertServerDlg::StopGetApiThread()
 	{
 		m_pGetApiThread->m_bAbort = TRUE;
 		SetEvent(m_pGetApiThread->m_hKillEvent);
-		WaitForSingleObject(m_pGetApiThread->m_hThread, INFINITE);
+		if (WaitForSingleObject(m_pGetApiThread->m_hThread, 300) != WAIT_OBJECT_0)
+		{
+			return;
+		}
 		delete m_pGetApiThread;
 		m_pGetApiThread = NULL;
 	}
@@ -1009,14 +1024,17 @@ void CdocConvertServerDlg::StopConvertThread()
 		if (m_pConvertThread[i] != NULL)
 		{
 			m_pConvertThread[i]->m_bAbort = TRUE;
-			SetEvent(m_pConvertThread[i]->m_hKillEvent);
 		}
 	}
 	for (int i = 0; i < g_nThreadNumber; i++)
 	{
 		if (m_pConvertThread[i] != NULL)
 		{
-			WaitForSingleObject(m_pConvertThread[i]->m_hThread, INFINITE);
+			SetEvent(m_pConvertThread[i]->m_hKillEvent);
+			if (WaitForSingleObject(m_pConvertThread[i]->m_hThread, 100) != WAIT_OBJECT_0)
+			{
+				continue;
+			}
 			delete m_pConvertThread[i];
 			m_pConvertThread[i] = NULL;
 		}
@@ -1074,19 +1092,18 @@ void CdocConvertServerDlg::OnBnClickedStart()
 }
 
 //*
-void CdocConvertServerDlg::ShowMsgList(char *msg)
+void CdocConvertServerDlg::ShowMsgList(char *msg, BOOL bsavelog)
 {
-	if (m_wndMsgList.GetCount()> 500)
+	if (m_wndMsgList.GetCount()> 100)
 	{
-		m_wndMsgList.DeleteItem(0);
+		m_wndMsgList.DeleteString(100);
 	}
-	char *p = new char[strlen(msg) + 100];
-	char now[64] = {};
-	GetNowTime(now);
-	sprintf_s(p, strlen(msg) + 100, "%s -- %s", now, msg);
-	m_wndMsgList.AddString(CharToCString(p));
-	WriteLog(g_strLogPath, p);
-	delete[] p;
+	CString strnow = COleDateTime::GetCurrentTime().Format(L"%Y-%m-%d %H:%M:%S");
+	m_wndMsgList.InsertString(0, strnow + L" -- " + CharToCString(msg));
+// 	m_wndMsgList.AddString(strnow + L" -- " +CharToCString(msg));
+// 	m_wndMsgList.SetCurSel(m_wndMsgList.GetCount()-1);
+	if (bsavelog)
+		WriteLog(g_strLogPath, msg);
 }
 
 void CdocConvertServerDlg::InitListCtrlDomain()
@@ -1147,7 +1164,7 @@ void CdocConvertServerDlg::AddListCtrl(p_st_msg sm)
 		for (int i = 0; i < nid; i++)
 		{
 			CString strtemp = m_wndListCtrl.GetItemText(i, 5);
-			if (strtemp.Compare(CharToCString(strConvertStatus[WaitConvert])) == 0)
+			if (strtemp.Compare(strConvertStatus[WaitConvert]) == 0)
 			{
 				CString strtime = m_wndListCtrl.GetItemText(i, 4);
 				COleDateTime oleDate;
@@ -1161,7 +1178,7 @@ void CdocConvertServerDlg::AddListCtrl(p_st_msg sm)
 					break;
 				}
 			}
-			else if (strtemp.Compare(CharToCString(strConvertStatus[Converting])) != 0)
+			else if (strtemp.Compare(strConvertStatus[Converting]) != 0)
 			{
 				// 				printf("delete item id = %d\n", i);
 				m_wndListCtrl.DeleteItem(i);
@@ -1179,7 +1196,7 @@ void CdocConvertServerDlg::AddListCtrl(p_st_msg sm)
 	m_wndListCtrl.SetItemText(nid, 1, strid);
 	m_wndListCtrl.SetItemText(nid, 2, CharToCString(strFileType[sm->sc->filetype]));
 	m_wndListCtrl.SetItemText(nid, 3, now.Format(L"%Y-%m-%d %H:%M:%S"));
-	m_wndListCtrl.SetItemText(nid, 4, CharToCString(strConvertStatus[WaitConvert]));
+	m_wndListCtrl.SetItemText(nid, 4, strConvertStatus[WaitConvert]);
 
 
 	// 	m_wndListMsg.EnsureVisible(sm->sc->id, FALSE);
@@ -1195,7 +1212,7 @@ void CdocConvertServerDlg::UpdateListCtrl(p_st_msg sm, OutStatus status)
 		// 		printf("id = %d\n", fileid);
 		if (fileid == sm->sc->fileid)
 		{
-			m_wndListCtrl.SetItemText(i, 4, CharToCString(strConvertStatus[status]));
+			m_wndListCtrl.SetItemText(i, 4, strConvertStatus[status]);
 
 			break;
 		}
@@ -1206,8 +1223,16 @@ void CdocConvertServerDlg::UpdateListCtrl(p_st_msg sm, OutStatus status)
 
 afx_msg LRESULT CdocConvertServerDlg::OnMsglistShow(WPARAM wParam, LPARAM lParam)
 {
-	ShowMsgList((char*)lParam);
+	ShowMsgList((char*)lParam, (BOOL)wParam);
 	delete[] (char*)lParam;
+	return 0;
+}
+
+afx_msg LRESULT CdocConvertServerDlg::OnMsgMsgLog(WPARAM wParam, LPARAM lParam)
+{
+	char *msg = (char*)lParam;
+	WriteLog(g_strLogPath, msg);
+	delete[] msg;
 	return 0;
 }
 
@@ -1244,8 +1269,8 @@ afx_msg LRESULT CdocConvertServerDlg::OnMsgListctrlUpdate(WPARAM wParam, LPARAM 
 		{
 			if (sm->sc->fileid < 0)
 			{
-				char logmsg[1024] = { 0 };
-				sprintf_s(logmsg, "%s line %d Error! fileid = %d, filetype = %s",__FILE__, __LINE__, sm->sc->fileid, strFileType[sm->sc->filetype]);
+				char logmsg[2000] = { 0 };
+				sprintf_s(logmsg, 2000, "%s line %d Error! fileid = %d, filetype = %s",__FILE__, __LINE__, sm->sc->fileid, strFileType[sm->sc->filetype]);
 // 				WriteLog(g_strLogPath, logmsg);
 				ShowMsgList(logmsg);
 
@@ -1298,6 +1323,7 @@ void CdocConvertServerDlg::OnDestroy()
 	StopPostResultThread();
 	StopConvertThread();
 	curl_global_cleanup();
+	exit(0);
 }
 
 
@@ -1305,3 +1331,5 @@ void CdocConvertServerDlg::OnBnClickedBtClearsqlite()
 {
 	CConnectDB::GetInstance()->delete_convert_table_all();
 }
+
+

@@ -77,9 +77,19 @@ int CPostResultThread::Run()
 			int ret = PostSuccessOrFail(postmsg, TRUE);
 			if (ret)
 			{
-				char *errmsg = new char[200];
-				sprintf_s(errmsg, 200, "上传转换成功信息失败---返回码 %d", ret);
-				PostMessageA(m_hMainWnd, WM_MSGLIST_SHOW, 0, (LPARAM)errmsg);
+// 				char *errmsg = new char[200];
+// 				sprintf_s(errmsg, 200, "上传转换成功信息失败---返回码 %d", ret);
+// 				PostMessageA(m_hMainWnd, WM_MSGLIST_SHOW, 0, (LPARAM)errmsg);
+#if 1
+// 				char cret[10] = {};
+// 				sprintf_s(cret, 10, "%d", ret);
+				int errlen = postmsg.length() + 100;
+				char *errlog = new char[errlen];
+				memset(errlog, 0, errlen);
+				sprintf_s(errlog, errlen, "上传转换成功信息失败--返回码:%d,信息(%d):%s",ret, postmsg.length() , postmsg.c_str());
+// 				errlog[errlen - 1] = '\0';
+				PostMessageA(m_hMainWnd, WM_MSGLIST_SHOW, 1, (LPARAM)errlog);
+#endif
 			}
 			lastSuccessPostTime = COleDateTime::GetCurrentTime();
 		}
@@ -97,9 +107,19 @@ int CPostResultThread::Run()
 			int ret = PostSuccessOrFail(postmsg, FALSE);
 			if (ret)
 			{
-				char *errmsg = new char[200];
-				sprintf_s(errmsg, 200, "上传转换失败信息失败---返回码 %d", ret);
-				PostMessageA(m_hMainWnd, WM_MSGLIST_SHOW, 0, (LPARAM)errmsg);
+// 				char *errmsg = new char[200];
+// 				sprintf_s(errmsg, 200, "上传转换失败信息失败---返回码 %d", ret);
+// 				PostMessageA(m_hMainWnd, WM_MSGLIST_SHOW, 0, (LPARAM)errmsg);
+#if 1
+// 				char cret[10] = {};
+// 				sprintf_s(cret, 10, "%d", ret);
+				int errlen = postmsg.length() + 100;
+				char *errlog = new char[errlen];
+				memset(errlog, 0, errlen);
+				sprintf_s(errlog, errlen, "上传转换失败信息失败--返回码:%d,信息(%d):%s", ret, postmsg.length(), postmsg.c_str());
+// 				errlog[errlen - 1] = '\0';
+				PostMessageA(m_hMainWnd, WM_MSGLIST_SHOW, 1, (LPARAM)errlog);
+#endif
 			}
 
 			lastFailedPostTime = COleDateTime::GetCurrentTime();

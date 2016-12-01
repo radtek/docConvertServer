@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
+// using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
+// using System.Threading.Tasks;
 using EPocalipse.IFilter;
 using System.IO;
 using System.Runtime.InteropServices;
@@ -79,16 +79,17 @@ namespace wordtotxtpng
                 {
                     doc = new Document(sourcefile);
                     pages = doc.PageCount;
+                    if (isoriginal == 0 && pages < minpage)
+                    {
+                        PostThreadMessage(threadid, WM_MSG_WORD2TXT_STATUS, (int)OutStatus.PageLess, pages);
+                        return;
+                    }
                 }
                 catch (Exception e)
                 {
-                    PostThreadMessage(threadid, WM_MSG_WORD2TXT_STATUS, (int)OutStatus.TotxtFailed, pages);
-                    return;
-                }
-                if (isoriginal == 0 && pages < minpage)
-                {
-                    PostThreadMessage(threadid, WM_MSG_WORD2TXT_STATUS, (int)OutStatus.PageLess, pages);
-                    return;
+//                     PostThreadMessage(threadid, WM_MSG_WORD2TXT_STATUS, (int)OutStatus.TotxtFailed, pages);
+//                     return;
+                    istoimg = 0;
                 }
             }
 

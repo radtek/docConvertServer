@@ -62,7 +62,9 @@ extern CMutex g_mtxConvertSuccess;//
 extern list<p_st_tconverted> g_ltConvertFailed;
 extern CMutex g_mtxConvertFailed;
 extern int g_nMaxFileInFloder;//文件夹最大文件数
-
+extern int g_nMultiProcessId;//多进程标致
+extern HANDLE g_hMulti;
+extern BOOL g_bAutoStart;//启动程序后自动开始转换
 
 extern char* g_strInifile;
 extern char* g_strNode;

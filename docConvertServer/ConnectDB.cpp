@@ -64,8 +64,8 @@ void CConnectDB::ReleaseDB()
 
 int CConnectDB::insert_convert_table(p_st_tconvert tmsg)
 {
-	char sql[1024] = { 0 };
-	sprintf_s(sql, "insert into t_convert (fileid, softlink, filetype, isoriginal, status) values (%d, '%s', '%s', '%d', '%d');",
+	char sql[2000] = { 0 };
+	sprintf_s(sql, 2000, "insert into t_convert (fileid, softlink, filetype, isoriginal, status) values (%d, '%s', '%s', '%d', '%d');",
 		tmsg->fileid, tmsg->softlink, strFileType[tmsg->filetype], tmsg->isoriginal, tmsg->status);
 	int nRows = 0;
 	EnterCriticalSection(&m_csTConvert);
@@ -85,7 +85,7 @@ int CConnectDB::insert_convert_table(p_st_tconvert tmsg)
 int CConnectDB::delete_convert_table_all()
 {
 	char sql[1024] = { 0 };
-	sprintf_s(sql, "delete from t_convert;");
+	sprintf_s(sql, 1024, "delete from t_convert;");
 	int nRows = 0;
 	EnterCriticalSection(&m_csTConvert);
 	try
@@ -103,7 +103,7 @@ int CConnectDB::delete_convert_table_all()
 int CConnectDB::delete_convert_table(const int &nid)
 {
 	char sql[1024] = { 0 };
-	sprintf_s(sql, "delete from t_convert where nid=%d;", nid);
+	sprintf_s(sql, 1024, "delete from t_convert where nid=%d;", nid);
 	int nRows = 0;
 	EnterCriticalSection(&m_csTConvert);
 	try
@@ -122,7 +122,7 @@ int CConnectDB::update_convert_table(p_st_tconvert tmsg)
 {
 	char sql[1024] = { 0 };
 	int nRows = 0;
-	sprintf_s(sql, "update t_convert set status=%d where nid=%d;",tmsg->status, tmsg->nid);
+	sprintf_s(sql, 1024, "update t_convert set status=%d where nid=%d;",tmsg->status, tmsg->nid);
 	try
 	{
 		EnterCriticalSection(&m_csTConvert);
@@ -148,11 +148,11 @@ int CConnectDB::query_convert_table(list<p_st_tconvert> &v_convert, int status)
 	char sql[1024] = { 0 };
 	if (status == -1)
 	{
-		sprintf_s(sql, "select * from t_convert;");
+		sprintf_s(sql, 1024, "select * from t_convert;");
 	}
 	else
 	{
-		sprintf_s(sql, "select * from t_convert where status = %d;", status);
+		sprintf_s(sql, 1024, "select * from t_convert where status = %d;", status);
 	}
 	EnterCriticalSection(&m_csTConvert);
 	CppSQLite3Query q = m_pDb->execQuery(sql);
@@ -207,11 +207,11 @@ int CConnectDB::count_convert_table(const int &status)
 	char sql[1024] = { 0 };
 	if (status == -1)
 	{
-		sprintf_s(sql, "select * from t_convert;");
+		sprintf_s(sql, 1024, "select * from t_convert;");
 	}
 	else
 	{
-		sprintf_s(sql, "select * from t_convert where status = %d;", status);
+		sprintf_s(sql, 1024, "select * from t_convert where status = %d;", status);
 	}
 	EnterCriticalSection(&m_csTConvert);
 	CppSQLite3Query q = m_pDb->execQuery(sql);
@@ -232,7 +232,7 @@ int CConnectDB::count_convert_table(const int &status)
 int CConnectDB::insert_convert_success_table(p_st_tconverted tmsg)
 {
 	char sql[1024] = { 0 };
-	sprintf_s(sql, "insert into t_convert_success (fileid, filetype, node, txtstatus, txturl, imgstatus, imgurl, pagenumber) values (%d, '%s', '%s', '%d', '%s', '%d', '%s', '%d');",
+	sprintf_s(sql, 1024, "insert into t_convert_success (fileid, filetype, node, txtstatus, txturl, imgstatus, imgurl, pagenumber) values (%d, '%s', '%s', '%d', '%s', '%d', '%s', '%d');",
 		tmsg->fileid, strFileType[tmsg->filetype], tmsg->node, tmsg->txtstatus, tmsg->txturl, tmsg->imgstatus, tmsg->imgurl, tmsg->pagenumber);
 	EnterCriticalSection(&m_csTConvertSuccess);
 	int nRows = m_pDb->execDML(sql);
@@ -243,7 +243,7 @@ int CConnectDB::insert_convert_success_table(p_st_tconverted tmsg)
 int CConnectDB::delete_convert_success_table(const int &nid)
 {
 	char sql[1024] = { 0 };
-	sprintf_s(sql, "delete from t_convert_success where nid=%d;", nid);
+	sprintf_s(sql, 1024, "delete from t_convert_success where nid=%d;", nid);
 	EnterCriticalSection(&m_csTConvertSuccess);
 	int nRows = m_pDb->execDML(sql);
 	LeaveCriticalSection(&m_csTConvertSuccess);
@@ -253,7 +253,7 @@ int CConnectDB::delete_convert_success_table(const int &nid)
 int CConnectDB::update_convert_success_table(p_st_tconverted tmsg)
 {
 	char sql[1024] = { 0 };
-	sprintf_s(sql, "update t_convert_success set txtstatus=%d, imgstatus=%d where nid=%d;", tmsg->txtstatus, tmsg->imgstatus, tmsg->nid);
+	sprintf_s(sql, 1024, "update t_convert_success set txtstatus=%d, imgstatus=%d where nid=%d;", tmsg->txtstatus, tmsg->imgstatus, tmsg->nid);
 	EnterCriticalSection(&m_csTConvertSuccess);
 	int nRows = m_pDb->execDML(sql);
 	LeaveCriticalSection(&m_csTConvertSuccess);
@@ -264,7 +264,7 @@ vector<p_st_tconverted> CConnectDB::query_convert_success_table(const int &nid)
 {
 	char sql[1024] = { 0 };
 
-	sprintf_s(sql, "select * from t_convert_failed where nid = %d;", nid);
+	sprintf_s(sql, 1024, "select * from t_convert_failed where nid = %d;", nid);
 
 	EnterCriticalSection(&m_csTConvertSuccess);
 	CppSQLite3Query q = m_pDb->execQuery(sql);
@@ -326,7 +326,7 @@ vector<p_st_tconverted> CConnectDB::query_convert_success_table(const int &nid)
 int CConnectDB::insert_convert_failed_table(p_st_tconverted tmsg)
 {
 	char sql[1024] = { 0 };
-	sprintf_s(sql, "insert into t_convert_failed (fileid, filetype, node, txtstatus, txturl, pagenumber) values ( %d, '%s', '%s', '%d', '%s', '%d');",
+	sprintf_s(sql, 1024, "insert into t_convert_failed (fileid, filetype, node, txtstatus, txturl, pagenumber) values ( %d, '%s', '%s', '%d', '%s', '%d');",
 		tmsg->fileid, strFileType[tmsg->filetype], tmsg->node, tmsg->txtstatus, tmsg->txturl, tmsg->pagenumber);
 	EnterCriticalSection(&m_csTConvertFailed);
 	int nRows = m_pDb->execDML(sql);
@@ -337,7 +337,7 @@ int CConnectDB::insert_convert_failed_table(p_st_tconverted tmsg)
 int CConnectDB::delete_convert_failed_table(const int &nid)
 {
 	char sql[1024] = { 0 };
-	sprintf_s(sql, "delete from t_convert_failed where nid=%d;", nid);
+	sprintf_s(sql, 1024, "delete from t_convert_failed where nid=%d;", nid);
 	EnterCriticalSection(&m_csTConvertFailed);
 	int nRows = m_pDb->execDML(sql);
 	LeaveCriticalSection(&m_csTConvertFailed);
@@ -347,7 +347,7 @@ int CConnectDB::delete_convert_failed_table(const int &nid)
 int CConnectDB::update_convert_failed_table(p_st_tconverted tmsg)
 {
 	char sql[1024] = { 0 };
-	sprintf_s(sql, "update t_convert_failed set txtstatus=%d, imgstatus=%d where nid=%d;", tmsg->txtstatus, tmsg->imgstatus, tmsg->nid);
+	sprintf_s(sql, 1024, "update t_convert_failed set txtstatus=%d, imgstatus=%d where nid=%d;", tmsg->txtstatus, tmsg->imgstatus, tmsg->nid);
 	EnterCriticalSection(&m_csTConvertFailed);
 	int nRows = m_pDb->execDML(sql);
 	LeaveCriticalSection(&m_csTConvertFailed);
@@ -358,7 +358,7 @@ vector<p_st_tconverted> CConnectDB::query_convert_failed_table(const int &nid)
 {
 	char sql[1024] = { 0 };
 
-	sprintf_s(sql, "select * from t_convert_failed where nid = %d;", nid);
+	sprintf_s(sql, 1024, "select * from t_convert_failed where nid = %d;", nid);
 
 	EnterCriticalSection(&m_csTConvertFailed);
 	CppSQLite3Query q = m_pDb->execQuery(sql);

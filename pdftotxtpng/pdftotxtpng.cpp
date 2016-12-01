@@ -23,6 +23,7 @@
 using namespace std;
 
 #define WM_MSG_PDF2TXT_STATUS WM_USER + 0x17
+#define WM_MSG_PDF2IMG_STATUS WM_USER + 0x18
 
 enum OutStatus
 {
@@ -164,7 +165,7 @@ FPDFBitmap_Destroy pFPDFBitmapDestroy;
 
 
 HINSTANCE hdll;
-
+static int g_nImgPageNum;
 
 
 int InitFPdfSdk();
@@ -833,7 +834,7 @@ void ExecuteScaleImg(char *sourcefile, char *outfile, int type)
 
 }
 
-int ConvertPdfToTxt(const char *sourcefile, const char *outtxtpath, const char *outpngpath, const int &fileid, const int &minpage, const int &txtSize, int &pageNum, const int &istoimg, const int &isoriginal)
+int ConvertPdfToTxt(const char *sourcefile, const char *outtxtpath, const char *outpngpath, const int &fileid, const int &minpage, const int &txtSize, int &pageNum, const int &istoimg, const int &isoriginal, int &btoimgstatus)
 {
 	int nReturn = 3;
 
@@ -872,12 +873,12 @@ int ConvertPdfToTxt(const char *sourcefile, const char *outtxtpath, const char *
 		if (outtxtpath[strlen(outtxtpath) - 1] == '\\' || outtxtpath[strlen(outtxtpath) - 1] == '/')
 		{
 			sprintf(txtfile, "%s%d.txt", outtxtpath, fileid);
-			sprintf_s(imgpath, "%s", outpngpath);
+			sprintf_s(imgpath, 1024, "%s", outpngpath);
 		}
 		else
 		{
 			sprintf(txtfile, "%s\\%d.txt", outtxtpath, fileid);
-			sprintf_s(imgpath, "%s\\", outpngpath);
+			sprintf_s(imgpath, 1024, "%s\\", outpngpath);
 		}
 
 
@@ -920,8 +921,11 @@ int ConvertPdfToTxt(const char *sourcefile, const char *outtxtpath, const char *
 						delete[] c_buf;
 
 						pFpdfCloseDocument(pDoc);
+						pDoc = NULL;
 
-						return ConvertSuccess;
+						nToTxtStatusOk = 1;
+						nReturn = ConvertSuccess;
+						break;
 					}
 					else
 					{
@@ -946,6 +950,32 @@ int ConvertPdfToTxt(const char *sourcefile, const char *outtxtpath, const char *
 						break;
 					}
 				}
+				//扫描版问题
+				if (i >= 3)
+				{
+					if (!g_nImgPageNum) break;
+					if (pageNum >= g_nImgPageNum)
+					{
+						int bok = pFPDFTextPdfToText(sourcefile, txtfile, 1, NULL);
+						if (bok)
+						{
+							//////正则表达式替换-----page 1-----
+							// 									RegexTxtFile(cfilename, txtfile, cid);
+							RegexTxt(txtfile, "-*(p|P)age.*-*", "NULL");
+
+							if (txtSize)
+							{
+								ResolveTxtFile(txtfile, txtfile, txtSize * 1024);
+							}
+							//////////////////////////////////////////////////////////////////////////
+
+						}
+						nToTxtStatusOk++;
+					}
+
+					break;
+
+				}
 			}
 			catch (...)
 			{
@@ -969,8 +999,13 @@ int ConvertPdfToTxt(const char *sourcefile, const char *outtxtpath, const char *
 
 					ChangeImgName(imgpath1, outimgfile);
 
-					//缩小图片
-					ExecuteScaleImg(outimgfile, outsmallfile, 1);
+
+					if (IsFileExist(outimgfile))
+					{
+						//缩小图片
+						ExecuteScaleImg(outimgfile, outsmallfile, 1);
+						btoimgstatus = 1;
+					}
 
 					pFpdfCloseDocument(pDoc);
 
@@ -1015,6 +1050,11 @@ int ConvertPdfToTxt(const char *sourcefile, const char *outtxtpath, const char *
 
 					//缩小图片
 					ExecuteScaleImg(outimgfile, outsmallfile, 1);
+
+					if (IsFileExist(outimgfile))
+					{
+						btoimgstatus = 1;
+					}
 
 					remove(c_imgfile);
 					pFPDFClosePage(m_pPage);
@@ -1111,25 +1151,33 @@ int _tmain(int argc, _TCHAR* argv[])
 		isoriginal = atoi(ctemp);
 		delete[] ctemp;
 
-#if _DEBUG
+		char g_strInifile[1024] = { 0 };
+		char p[512] = { 0 }; GetCurrentDirectoryA(512, p);
+		sprintf_s(g_strInifile, 1024, "%s\\docConvertServer.ini", p);
+		g_nImgPageNum = ::GetPrivateProfileIntA("PDF", "IMGPAGENUM", 100, g_strInifile);
+
+#if 0
 		char now[64] = { 0 };
 		GetNowTime(now);
 		printf("start %s \n", now);
 #endif
 		int pageNum = 0;
-		int status = ConvertPdfToTxt(c_pdffile, strtxtpath, strimgpath, fileid, minpage, txtsize, pageNum, istoimg, isoriginal);
-#if _DEBUG
+		int istoimgstatus = 0;
+		int status = ConvertPdfToTxt(c_pdffile, strtxtpath, strimgpath, fileid, minpage, txtsize, pageNum, istoimg, isoriginal, istoimgstatus);
+#if 0
 		GetNowTime(now);
 		printf("end %s \n", now);
 #endif
 		PostThreadMessage(nthreadid, WM_MSG_PDF2TXT_STATUS, status, pageNum);
+		Sleep(10);
+		PostThreadMessage(nthreadid, WM_MSG_PDF2IMG_STATUS, istoimgstatus, NULL);
 
 		Sleep(50);
 
 		pdf_destroy();
 		FreeLibrary(hdll);
 
-#if _DEBUG
+#if 0
 		getchar();
 #endif
 	}

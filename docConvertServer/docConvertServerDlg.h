@@ -45,7 +45,7 @@ public:
 	void InitListCtrlDomain();
 	void AddListCtrlDomain(p_st_domain2path sm);
 
-	void ShowMsgList(char *msg);
+	void ShowMsgList(char *msg, BOOL bsavelog = FALSE);
 	void InitListCtrl();
 	void AddListCtrl(p_st_msg sm);
 	void UpdateListCtrl(p_st_msg sm, OutStatus status);
@@ -120,4 +120,6 @@ public:
 	afx_msg void OnBnClickedBtClearsqlite();
 	// //文件夹中最大文件数
 	int m_nMaxFileNumInFloder;
+protected:
+	afx_msg LRESULT OnMsgMsgLog(WPARAM wParam, LPARAM lParam);
 };

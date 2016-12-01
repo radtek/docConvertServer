@@ -56,14 +56,21 @@ double getTotalFileLenth(const char* url)
 	while (reGetTimes > 0 && downloadFileLenth == -1)
 	{
 		reGetTimes--;
-		if (curl_easy_perform(pCurl) == CURLE_OK)
+		try
 		{
-			curl_easy_getinfo(pCurl, CURLINFO_CONTENT_LENGTH_DOWNLOAD, &downloadFileLenth);
+			if (curl_easy_perform(pCurl) == CURLE_OK)
+			{
+				curl_easy_getinfo(pCurl, CURLINFO_CONTENT_LENGTH_DOWNLOAD, &downloadFileLenth);
+			}
+			else
+			{
+				downloadFileLenth = -1;
+				TRACE("get length error\n");
+			}
 		}
-		else
+		catch (...)
 		{
-			downloadFileLenth = -1;
-			TRACE("get length error\n");
+			TRACE("curl_easy_perform     getTotalFileLenth error!\n");
 		}
 	}
 	curl_easy_cleanup(pCurl);
@@ -153,10 +160,17 @@ int downloadfile(const char *url, char *down_path, int timeout, char *fileName)
 		curl_easy_setopt(pCurl, CURLOPT_PROGRESSFUNCTION, progressFunc);
 		curl_easy_setopt(pCurl, CURLOPT_PROGRESSDATA, &curDownloadLen);
 
-		//开始下载
-		if (curl_easy_perform(pCurl))
+		try
 		{
-			//下载失败
+			//开始下载
+			if (curl_easy_perform(pCurl))
+			{
+				//下载失败
+				nreturn = 4;
+			}
+		}
+		catch (...)
+		{
 			nreturn = 4;
 		}
 		fclose(fp);

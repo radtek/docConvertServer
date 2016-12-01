@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Drawing;
 using System.Drawing.Imaging;
+using System.IO;
 
 namespace ScaleImg
 {
@@ -27,6 +28,11 @@ namespace ScaleImg
             sourcefile = args[0];
             outfile = args[1];
             filetype = int.Parse(args[2]);
+
+            if(!File.Exists(sourcefile))
+            {
+                return;
+            }
 
             int outwidth = 141;
             int outheight = 200;

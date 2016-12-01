@@ -17,7 +17,7 @@ enum OutStatus{
 	Converting
 };
 
-const char strConvertStatus[][100] = { "转换成功", "下载失败", "扫描版或者纯图片", "totxt转换失败", "页数低于指定值", "等待转换", "正在转换" };
+const wchar_t strConvertStatus[][100] = { L"转换成功",L"下载失败/文件不存在", L"扫描版或者纯图片", L"totxt转换失败", L"页数低于指定值", L"等待转换", L"正在转换" };
 
 enum FILETYPE
 {

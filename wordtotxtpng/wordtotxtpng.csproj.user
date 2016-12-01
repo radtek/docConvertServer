@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
-    <StartArguments>L:\\domain\\up2226.book118.com\\wordtest1/2473508-57fcb9a05600c.doc l:\\outtxt\\2016\\1105\\book3 l:\\outimg\\2016\\1105\\book3 12600 10002 4 1024 1 1</StartArguments>
+    <StartArguments>L:\temp\下载目录\3123474-5833e6da17257.doc l:\outtxt\2016\1121\book62001 l:\outimg\2016\1121\book62001 52764 62000097 4 1024 1 0</StartArguments>
   </PropertyGroup>
 </Project>

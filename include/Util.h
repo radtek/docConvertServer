@@ -324,35 +324,44 @@ static bool CreateMultipleDirectory(CString strDir)
 
 static bool CreateMultipleDirectory(const char* szPath)
 {
-	CString strDir=CharToCString(szPath);//存放要创建的目录字符串
-	//确保以'\'结尾以创建最后一个目录
-	if (strDir.GetAt(strDir.GetLength() - 1) != _T('\\') && strDir.GetAt(strDir.GetLength() - 1) != _T('/'))
+// 	CString strDir=CharToCString(szPath);//存放要创建的目录字符串
+// 	//确保以'\'结尾以创建最后一个目录
+// 	if (strDir.GetAt(strDir.GetLength() - 1) != _T('\\') && strDir.GetAt(strDir.GetLength() - 1) != _T('/'))
+// 	{
+// 		strDir.AppendChar(_T('\\'));
+// 	}
+	string cpath(szPath);
+	int len = cpath.length();
+	if (cpath[len-1] != '\\' &&cpath[len-1] != '/')
 	{
-		strDir.AppendChar(_T('\\'));
+		cpath = cpath + "\\";
 	}
-	std::vector<CString> vPath;//存放每一层目录字符串
-	CString strTemp;//一个临时变量,存放目录字符串
+	vector<string> vpath; 
+	string strtemp;
+// 	std::vector<CString> vPath;//存放每一层目录字符串
+// 	CString strTemp;//一个临时变量,存放目录字符串
 	bool bSuccess = false;//成功标志
 	//遍历要创建的字符串
-	for (int i=0;i<strDir.GetLength();++i)
+	for (unsigned int i=0;i<cpath.length();++i)
 	{
-		if (strDir.GetAt(i) != _T('\\') && strDir.GetAt(i) != _T('/'))
+		if (cpath[i] != '\\' && cpath[i] != '/')
 		{//如果当前字符不是'\\'
-			strTemp.AppendChar(strDir.GetAt(i));
+			//strtemp = cpath.substr(0, i);
 		}
 		else 
 		{//如果当前字符是'\\'
-			vPath.push_back(strTemp);//将当前层的字符串添加到数组中
-			strTemp.AppendChar(_T('\\'));
+			strtemp = cpath.substr(0, i);
+			vpath.push_back(strtemp);//将当前层的字符串添加到数组中
+// 			strTemp.AppendChar(_T('\\'));
 		}
 	}
 
 	//遍历存放目录的数组,创建每层目录
-	std::vector<CString>::const_iterator vIter;
-	for (vIter = vPath.begin(); vIter != vPath.end(); vIter++) 
+	std::vector<string>::const_iterator vIter;
+	for (vIter = vpath.begin(); vIter != vpath.end(); vIter++)
 	{
 		//如果CreateDirectory执行成功,返回true,否则返回false
-		bSuccess = CreateDirectory(*vIter, NULL) ? true : false;    
+		bSuccess = CreateDirectoryA((*vIter).c_str(), NULL) ? true : false;  
 	}
 
 	return bSuccess;
@@ -651,10 +660,14 @@ static void WriteLog(char *path, char *msg)
 		try
 		{
 			nNum++;
-			char wmsg[1034] = { 0 };
 			char now[64] = { 0 };
 			GetNowTime(now);
-			sprintf_s(wmsg, "%d --%s--  %s\r\n", nNum, now, msg);
+			char cnum[10] = {};
+			sprintf_s(cnum, 10, "%d", nNum);
+			int msglen = strlen(msg) + strlen(now) + 9 + strlen(cnum);
+			char *wmsg = new char[msglen + 1];
+			sprintf_s(wmsg, msglen + 1, "%s --%s--  %s\r\n", cnum, now, msg);
+			wmsg[msglen] = '\0';
 #if USE_CFILE
 			file.Write(wmsg, strlen(wmsg));
 #else
@@ -662,6 +675,7 @@ static void WriteLog(char *path, char *msg)
 			{
 				TRACE("write msg error\n");
 			}
+			delete[] wmsg;
 #endif
 		}
 		catch (CException* e)

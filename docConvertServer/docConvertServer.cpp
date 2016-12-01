@@ -58,6 +58,9 @@ CMutex g_mtxConvertSuccess;
 list<p_st_tconverted> g_ltConvertFailed;
 CMutex g_mtxConvertFailed;
 int g_nMaxFileInFloder;
+int g_nMultiProcessId;//多进程标志
+HANDLE g_hMulti;
+BOOL g_bAutoStart;//启动程序后自动开始转换
 
 char* g_strInifile;
 char* g_strNode;
@@ -97,17 +100,30 @@ BOOL CdocConvertServerApp::InitInstance()
 	// 例如修改为公司或组织名
 	SetRegistryKey(_T("应用程序向导生成的本地应用程序"));
 
-
-	CString s; s.LoadString(AFX_IDS_APP_TITLE);
-	if (!FirstInstance(s)) return FALSE;
-
-
 	InitGlobalData();
-
-
 
 	char p[512]; GetCurrentDirectoryA(512, p);
 	sprintf_s(g_strInifile, 1024, "%s\\docConvertServer.ini", p);
+
+	g_nMultiProcessId = ::GetPrivateProfileIntA("CONFIG", "MULTIPROCESSID", 1, g_strInifile);
+
+	wchar_t wp[100] = {};
+	wsprintf(wp, L"docConvertServer......%05d", g_nMultiProcessId);
+	g_hMulti = CreateMutex(NULL, FALSE, wp);
+	if (GetLastError() == ERROR_ALREADY_EXISTS)
+	{
+		ReleaseGlobalData();
+		return FALSE;
+	}
+	
+
+	CString s; s.LoadString(AFX_IDS_APP_TITLE);
+// 	if (!FirstInstance(s)) return FALSE;
+
+
+
+
+
 
 
 	CdocConvertServerDlg dlg;
@@ -159,6 +175,7 @@ void CdocConvertServerApp::InitGlobalData()
 	g_nTimeSpanApi = 0;
 	g_strInifile = new char[1024];
 	g_strNode = NULL;
+	g_hMulti = NULL;
 }
 
 void CdocConvertServerApp::ReleaseGlobalData()
@@ -244,5 +261,9 @@ void CdocConvertServerApp::ReleaseGlobalData()
 			it++;
 		}
 		g_ltConvertFailed.clear();
+	}
+	if (g_hMulti != NULL)
+	{
+		CloseHandle(g_hMulti);
 	}
 }
