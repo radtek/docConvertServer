@@ -57,6 +57,9 @@
     <ClInclude Include="PostResultThread.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="MyHttp.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="docConvertServer.cpp">
@@ -87,6 +90,9 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="PostResultThread.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="MyHttp.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

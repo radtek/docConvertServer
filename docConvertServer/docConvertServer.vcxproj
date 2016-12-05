@@ -117,6 +117,7 @@
     <ClInclude Include="docConvertServerDlg.h" />
     <ClInclude Include="GetAPIDataThread.h" />
     <ClInclude Include="GetConvertDataThread.h" />
+    <ClInclude Include="MyHttp.h" />
     <ClInclude Include="PostResultThread.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="stdafx.h" />
@@ -132,6 +133,7 @@
     <ClCompile Include="docConvertServerDlg.cpp" />
     <ClCompile Include="GetAPIDataThread.cpp" />
     <ClCompile Include="GetConvertDataThread.cpp" />
+    <ClCompile Include="MyHttp.cpp" />
     <ClCompile Include="PostResultThread.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
