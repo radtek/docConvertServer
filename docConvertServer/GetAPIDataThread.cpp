@@ -103,11 +103,22 @@ int CGetAPIDataThread::Run()
 		if (nspan-- > 0) continue;
 		
 		int ncount = CConnectDB::GetInstance()->count_convert_table(0);
-		if (ncount > 0)
+		if (ncount > 100)
 		{
-			nspan = 50;
+			nspan = 200;
 			continue;
 		}
+// 		g_mtxConvert.Lock();
+// 		int nltsize = g_ltConvert.size();
+// 		printf("***GetApiData ltConvert size = %d ***\n", nltsize);
+// 		if (nltsize > 120)
+// 		{
+// 			g_mtxConvert.Unlock();
+// 			nspan = 50;
+// 			continue;
+// 		}
+// 		g_mtxConvert.Unlock();
+
 
 		string response;
 		if (Get(g_strApiUrl, response) == CURLE_OK)
@@ -133,9 +144,10 @@ int CGetAPIDataThread::Run()
 					while (it != hmap.end())
 					{
 						CConnectDB::GetInstance()->insert_convert_table(it->second);
-						delete[] it->second->softlink;
+// 						delete[] it->second->softlink;
 						delete it->second;
 						it++;
+						Sleep(10);
 					}
 					hmap.clear();
 					nspan = g_nTimeSpanApi / 10;
@@ -187,6 +199,7 @@ void CGetAPIDataThread::printValueTree(map<int, p_st_tconvert> &hmap, Json::Valu
 									  sd = new st_tconvert;
 									  sd->fileid = nid;
 									  sd->status = 0;
+									  sd->trytimes = 0;
 								  }
 								  sd->fileid = atoi(value.asString().c_str());
 								  hmap[nid] = sd;
@@ -204,6 +217,7 @@ void CGetAPIDataThread::printValueTree(map<int, p_st_tconvert> &hmap, Json::Valu
 									  sd = new st_tconvert;
 									  sd->fileid = nid;
 									  sd->status = 0;
+									  sd->trytimes = 0;
 // 									  sd->datetime = new char[64];
 // 									  GetNowTime(sd->datetime);
 								  }
@@ -226,6 +240,7 @@ void CGetAPIDataThread::printValueTree(map<int, p_st_tconvert> &hmap, Json::Valu
 									  sd = new st_tconvert;
 									  sd->fileid = nid;
 									  sd->status = 0;
+									  sd->trytimes = 0;
 // 									  sd->datetime = new char[64];
 // 									  GetNowTime(sd->datetime);
 								  }
@@ -261,6 +276,7 @@ void CGetAPIDataThread::printValueTree(map<int, p_st_tconvert> &hmap, Json::Valu
 									  sd = new st_tconvert;
 									  sd->fileid = nid;
 									  sd->status = 0;
+									  sd->trytimes = 0;
 // 									  sd->datetime = new char[64];
 // 									  GetNowTime(sd->datetime);
 								  }

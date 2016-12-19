@@ -69,28 +69,28 @@ int CPostResultThread::Run()
 #endif
 		nowtime = COleDateTime::GetCurrentTime();
 		g_mtxConvertSuccess.Lock();
-		if (g_ltConvertSuccess.size() >= 20 || ((nowtime - lastSuccessPostTime) > COleDateTimeSpan(0, 0, 0, 10) && g_ltConvertSuccess.size() > 0))
+		int ncount_suc = g_ltConvertSuccess.size();
+		if (g_ltConvertSuccess.size() >= 20 || ((nowtime - lastSuccessPostTime) > COleDateTimeSpan(0, 0, 0, 10) && ncount_suc > 0))
 		{
 			string postmsg = BuildPostMsg(g_ltConvertSuccess, TRUE);
 			g_ltConvertSuccess.clear();
 			g_mtxConvertSuccess.Unlock();
 			int ret = PostSuccessOrFail(postmsg, TRUE);
+			int trytimes = 2;
+			while (ret&& trytimes-->0)
+			{
+				Sleep(500);
+				ret = PostSuccessOrFail(postmsg, TRUE);
+			}
 			if (ret)
 			{
-// 				char *errmsg = new char[200];
-// 				sprintf_s(errmsg, 200, "上传转换成功信息失败---返回码 %d", ret);
-// 				PostMessageA(m_hMainWnd, WM_MSGLIST_SHOW, 0, (LPARAM)errmsg);
-#if 1
-// 				char cret[10] = {};
-// 				sprintf_s(cret, 10, "%d", ret);
-				int errlen = postmsg.length() + 100;
-				char *errlog = new char[errlen];
-				memset(errlog, 0, errlen);
-				sprintf_s(errlog, errlen, "上传转换成功信息失败--返回码:%d,信息(%d):%s",ret, postmsg.length() , postmsg.c_str());
-// 				errlog[errlen - 1] = '\0';
-				PostMessageA(m_hMainWnd, WM_MSGLIST_SHOW, 1, (LPARAM)errlog);
-#endif
+				ShowErrorMsg(ret, postmsg, 1);
 			}
+			else
+			{
+				ShowSuccessMsg(ncount_suc, 1);
+			}
+
 			lastSuccessPostTime = COleDateTime::GetCurrentTime();
 		}
 		else
@@ -99,27 +99,27 @@ int CPostResultThread::Run()
 		}
 		nowtime = COleDateTime::GetCurrentTime();
 		g_mtxConvertFailed.Lock();
-		if (g_ltConvertFailed.size() >= 20 || ((nowtime - lastFailedPostTime) > COleDateTimeSpan(0, 0, 0, 10) && g_ltConvertFailed.size() > 0))
+		int ncount_err = g_ltConvertFailed.size();
+		if (g_ltConvertFailed.size() >= 20 || ((nowtime - lastFailedPostTime) > COleDateTimeSpan(0, 0, 0, 10) && ncount_err > 0))
 		{
 			string postmsg = BuildPostMsg(g_ltConvertFailed, FALSE);
 			g_ltConvertFailed.clear();
 			g_mtxConvertFailed.Unlock();
 			int ret = PostSuccessOrFail(postmsg, FALSE);
+			int trytimes = 2;
+			while (ret&& trytimes-- > 0)
+			{
+				Sleep(500);
+				ret = PostSuccessOrFail(postmsg, FALSE);
+			}
+
 			if (ret)
 			{
-// 				char *errmsg = new char[200];
-// 				sprintf_s(errmsg, 200, "上传转换失败信息失败---返回码 %d", ret);
-// 				PostMessageA(m_hMainWnd, WM_MSGLIST_SHOW, 0, (LPARAM)errmsg);
-#if 1
-// 				char cret[10] = {};
-// 				sprintf_s(cret, 10, "%d", ret);
-				int errlen = postmsg.length() + 100;
-				char *errlog = new char[errlen];
-				memset(errlog, 0, errlen);
-				sprintf_s(errlog, errlen, "上传转换失败信息失败--返回码:%d,信息(%d):%s", ret, postmsg.length(), postmsg.c_str());
-// 				errlog[errlen - 1] = '\0';
-				PostMessageA(m_hMainWnd, WM_MSGLIST_SHOW, 1, (LPARAM)errlog);
-#endif
+				ShowErrorMsg(ret, postmsg, 0);
+			}
+			else
+			{
+				ShowSuccessMsg(ncount_err, 0);
 			}
 
 			lastFailedPostTime = COleDateTime::GetCurrentTime();
@@ -133,6 +133,42 @@ int CPostResultThread::Run()
 	return 0;
 }
 
+void CPostResultThread::ShowSuccessMsg(const int &count, const int &ntype)
+{
+#if 1
+	int errlen = 100;
+	char *errlog = new char[errlen];
+	memset(errlog, 0, errlen);
+	if (ntype == 0)
+	{
+		sprintf_s(errlog, errlen, "上传转换失败信息成功--信息数:%d", count);
+	}
+	else
+	{
+		sprintf_s(errlog, errlen, "上传转换成功信息成功--信息数:%d", count);
+	}
+	PostMessageA(m_hMainWnd, WM_MSGLIST_SHOW, 1, (LPARAM)errlog);
+#endif
+}
+
+void CPostResultThread::ShowErrorMsg(const int &ret, const string &msg, const int &ntype)
+{
+#if 1
+	int errlen = msg.length() + 100;
+	char *errlog = new char[errlen];
+	memset(errlog, 0, errlen);
+	if (ntype == 0)
+	{
+		sprintf_s(errlog, errlen, "上传转换失败信息失败--返回码:%d,信息(%d):%s", ret, msg.length(), msg.c_str());
+	}
+	else
+	{
+		sprintf_s(errlog, errlen, "上传转换成功信息失败--返回码:%d,信息(%d):%s", ret, msg.length(), msg.c_str());
+	}
+	PostMessageA(m_hMainWnd, WM_MSGLIST_SHOW, 1, (LPARAM)errlog);
+#endif
+}
+
 string CPostResultThread::BuildPostMsg(list<p_st_tconverted> &lists, const BOOL bSuccess)
 {
 	list<p_st_tconverted>::iterator it = lists.begin();
@@ -144,6 +180,11 @@ string CPostResultThread::BuildPostMsg(list<p_st_tconverted> &lists, const BOOL 
 	}
 	while (it != lists.end())
 	{
+		if (NULL == *it)
+		{
+			it++;
+			continue;
+		}
 		Json::Value person;
 		person["id"] = (*it)->fileid;
 		if ((*it)->node != NULL)
@@ -177,19 +218,20 @@ string CPostResultThread::BuildPostMsg(list<p_st_tconverted> &lists, const BOOL 
 		}
 		root.append(person);
 
-		if ((*it)->node != NULL)
-		{
-			delete[](*it)->node;
-		}
-		if ((*it)->imgurl != NULL)
-		{
-			delete[](*it)->imgurl;
-		}
-		if ((*it)->txturl != NULL)
-		{
-			delete[](*it)->txturl;
-		}
+// 		if ((*it)->node != NULL)
+// 		{
+// 			delete[](*it)->node;
+// 		}
+// 		if ((*it)->imgurl != NULL)
+// 		{
+// 			delete[](*it)->imgurl;
+// 		}
+// 		if ((*it)->txturl != NULL)
+// 		{
+// 			delete[](*it)->txturl;
+// 		}
 		delete *it;
+		*it = NULL;
 
 		it++;
 	}
@@ -197,7 +239,7 @@ string CPostResultThread::BuildPostMsg(list<p_st_tconverted> &lists, const BOOL 
 	return data;
 }
 
-int CPostResultThread::PostSuccessOrFail(string msg, const BOOL bSuccess)
+int CPostResultThread::PostSuccessOrFail(const string &msg, const BOOL bSuccess)
 {
 	if (msg.empty() || msg == "") return 0;
 	string content;

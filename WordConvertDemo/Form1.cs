@@ -40,7 +40,7 @@ namespace WordConvertDemo
                 FileInfo[] files = theFolder.GetFiles();
                 foreach(FileInfo file in files)
                 {
-                    if (file.Name.IndexOf(".ppt") > -1 || file.Name.IndexOf(".doc") > -1 || file.Name.IndexOf(".xls") > -1)
+                    if (file.Name.IndexOf(".ppt") > -1 || file.Name.IndexOf(".doc") > -1 || file.Name.IndexOf(".xls") > -1 || file.Name.IndexOf(".pdf") > -1)
                     {
                         sourcefiles.Add(file.DirectoryName + "\\" + file.Name);
                     }

@@ -14,6 +14,8 @@
 #include <algorithm> // sort
 #include "curlfunc.h"
 #include "ConnectDB.h"
+#include "libDownfile.h"
+#include "libHttpPost.h"
 
 // CConvertThread
 
@@ -58,7 +60,7 @@ int CConvertThread::Run()
 	PostMessageA(m_hMainWnd, WM_MSGLIST_SHOW, 0, (LPARAM)showmsg);
 
 	int span = 5;
-	while (WaitForSingleObject(m_hKillEvent,100) != WAIT_OBJECT_0)
+	while (WaitForSingleObject(m_hKillEvent,10) != WAIT_OBJECT_0)
 	{
 		if (m_bAbort) break;
 
@@ -72,6 +74,10 @@ int CConvertThread::Run()
 			g_ltConvert.pop_front();
 			g_mtxConvert.Unlock();
 
+			if (NULL == pConvert)
+			{
+				continue;
+			}
 
 			p_st_tconverted pConverted = new st_tconverted;
 			pConverted->fileid = pConvert->fileid;
@@ -88,7 +94,20 @@ int CConvertThread::Run()
 			{
 				filepath = new char[1024];
 				domain = GetDomain(pConvert->softlink);
+#if 0
 				int ret = downloadfile(pConvert->softlink, g_strDownPath, 10, filepath);
+#else
+				char filename[100] = { 0 };
+				strcpy(filepath, g_strDownPath);
+				getFileNameFormUrl(filename, pConvert->softlink);
+				strcat(filepath, filename);
+				int ret = 1;
+				while (ret && pConvert->trytimes++ < 3)//下载失败会重新下载，最多3次
+				{
+					ret = StartDownfile(pConvert->softlink, filepath, 3);
+					Sleep(10);
+				}
+#endif
 			}
 			else
 			{
@@ -119,37 +138,26 @@ int CConvertThread::Run()
 				int pagenum = 0;
 				int nTotxtStatus = 3;
 				int nToimgStatus = 3;
-				switch (pConvert->filetype)
+				while (nTotxtStatus && pConvert->trytimes++ < 3)//转换失败会重新转换，最多3次
 				{
-				case MSWORD:
-// 					nTotxtStatus = StartConvertWordToTxt(filepath, outtxtpath, pConvert->fileid, g_nMinPages, pagenum, 1024, g_nConvertTimeOut);
-// 					if (!nTotxtStatus)
-// 					{
-// 						nToimgStatus = StartConvertWordToImg(filepath, outimgpath, pConvert->fileid, g_nConvertTimeOut);
-// 					}
-					StartConvertWordToTxtPng(filepath, outtxtpath, outimgpath, pConvert->fileid, pConvert->isoriginal, g_nMinPages, pagenum, 1024, g_nConvertTimeOut, g_bIsToImg, nTotxtStatus, nToimgStatus);
-					break;
-				case MSEXCEL:
-// 					nTotxtStatus = StartConvertExcelToTxt(filepath, outtxtpath, pConvert->fileid, g_nMinPages, pagenum, 1024, g_nConvertTimeOut);
-// 					if (!nTotxtStatus)
-// 					{
-// 						nToimgStatus = StartConvertExcelToImg(filepath, outimgpath, pConvert->fileid, g_nConvertTimeOut);
-// 					}
-					StartConvertExcelToTxtPng(filepath, outtxtpath, outimgpath, pConvert->fileid, pConvert->isoriginal, g_nMinPages, pagenum, 1024, g_nConvertTimeOut, g_bIsToImg, nTotxtStatus, nToimgStatus);
-					break;
-				case MSPPT:
-// 					nTotxtStatus = StartConvertPptToTxt(filepath, outtxtpath, pConvert->fileid, g_nMinPages, pagenum, 1024, g_nConvertTimeOut);
-// 					if (!nTotxtStatus)
-// 					{
-// 						nToimgStatus = StartConvertPptToImg(filepath, outimgpath, pConvert->fileid, g_nConvertTimeOut);
-// 					}
-					StartConvertPptToTxtJpg(filepath, outtxtpath, outimgpath, pConvert->fileid, pConvert->isoriginal, g_nMinPages, pagenum, 1024, g_nConvertTimeOut, g_bIsToImg, nTotxtStatus, nToimgStatus);
-					break;
-				case MSPDF:
-					StartConvertPdfToTxtPng(filepath, outtxtpath, outimgpath, pConvert->fileid, pConvert->isoriginal, g_nMinPages, pagenum, 1024, g_nConvertTimeOut, g_bIsToImg, nTotxtStatus, nToimgStatus);
-					break;
-				default:
-					break;
+					switch (pConvert->filetype)
+					{
+					case MSWORD:
+						StartConvertWordToTxtPng(filepath, outtxtpath, outimgpath, pConvert->fileid, pConvert->isoriginal, g_nMinPages, pagenum, 1024, g_nConvertTimeOut, g_bIsToImg, nTotxtStatus, nToimgStatus);
+						break;
+					case MSEXCEL:
+						StartConvertExcelToTxtPng(filepath, outtxtpath, outimgpath, pConvert->fileid, pConvert->isoriginal, g_nMinPages, pagenum, 1024, g_nConvertTimeOut, g_bIsToImg, nTotxtStatus, nToimgStatus);
+						break;
+					case MSPPT:
+						StartConvertPptToTxtJpg(filepath, outtxtpath, outimgpath, pConvert->fileid, pConvert->isoriginal, g_nMinPages, pagenum, 1024, g_nConvertTimeOut, g_bIsToImg, nTotxtStatus, nToimgStatus);
+						break;
+					case MSPDF:
+						StartConvertPdfToTxtPng(filepath, outtxtpath, outimgpath, pConvert->fileid, pConvert->isoriginal, g_nMinPages, pagenum, 1024, g_nConvertTimeOut, g_bIsToImg, nTotxtStatus, nToimgStatus);
+						break;
+					default:
+						break;
+					}
+					Sleep(10);
 				}
 				if (g_bIsDownFile&&g_bIsDelSrc)
 				{
@@ -167,32 +175,46 @@ int CConvertThread::Run()
 
 				if (!nTotxtStatus)
 				{
+					CConnectDB::GetInstance()->delete_convert_table(pConvert->nid);
+#ifdef SYNC_POST_RESULT
+					PostSuccessOrFail(pConverted, TRUE);
+#else
 					g_mtxConvertSuccess.Lock();
 					g_ltConvertSuccess.push_back(pConverted);
 					g_mtxConvertSuccess.Unlock();
+#endif
 				}
 				else
 				{
+
+					CConnectDB::GetInstance()->delete_convert_table(pConvert->nid);
+#ifdef SYNC_POST_RESULT
+					PostSuccessOrFail(pConverted, FALSE);
+#else
 					g_mtxConvertFailed.Lock();
 					g_ltConvertFailed.push_back(pConverted);
 					g_mtxConvertFailed.Unlock();
+#endif
 				}
 			}
-			else
+			else				//文件不存在
 			{
-				//文件不存在
 				pConverted->txtstatus = 1;
 				pConverted->pagenumber = 0;
 				SendMsgShow(pConverted, MSG_LISTCTRL_UPDATE, FileLoss);
+				CConnectDB::GetInstance()->delete_convert_table(pConvert->nid);
+#ifdef SYNC_POST_RESULT
+				PostSuccessOrFail(pConverted, FALSE);
+#else
 				g_mtxConvertFailed.Lock();
 				g_ltConvertFailed.push_back(pConverted);
 				g_mtxConvertFailed.Unlock();
-
+#endif
 			}
-			CConnectDB::GetInstance()->delete_convert_table(pConvert->nid);
-			delete[] pConvert->softlink;
 			delete pConvert;
+			pConvert = NULL;
 			delete domain;
+			domain = NULL;
 		}
 		else
 		{
@@ -200,6 +222,154 @@ int CConvertThread::Run()
 		}
 	}
 	return 0;
+}
+
+
+void CConvertThread::ShowSuccessMsg(const int &fileid, BOOL bSuccess)
+{
+	int errlen = 100;
+	char *errlog = new char[errlen];
+	memset(errlog, 0, errlen);
+	if (!bSuccess)
+	{
+		sprintf_s(errlog, errlen, "上传转换失败信息成功--文件ID:%d", fileid);
+	}
+	else
+	{
+		sprintf_s(errlog, errlen, "上传转换成功信息成功--文件ID:%d", fileid);
+	}
+	PostMessageA(m_hMainWnd, WM_MSGLIST_SHOW, 1, (LPARAM)errlog);
+}
+
+void CConvertThread::ShowErrorMsg(const int &ret, const string &msg, const int &fileid, BOOL bSuccess)
+{
+	int errlen = msg.length() + 200;
+	char *errlog = new char[errlen];
+	memset(errlog, 0, errlen);
+	if (!bSuccess)
+	{
+		sprintf_s(errlog, errlen, "上传转换失败信息失败--返回码:%d,文件ID(%d)", ret, fileid);
+	}
+	else
+	{
+		sprintf_s(errlog, errlen, "上传转换成功信息失败--返回码:%d,文件ID(%d)", ret, fileid);
+	}
+	PostMessageA(m_hMainWnd, WM_MSGLIST_SHOW, 1, (LPARAM)errlog);
+}
+
+int CConvertThread::PostSuccessOrFail(p_st_tconverted converted, BOOL bSuccess)
+{
+	int fileid = converted->fileid;
+// 	string msg = BuildPostMsg(converted, bSuccess);
+
+// 	int ret = PostSuccessOrFail(msg, bSuccess);
+
+	int err = 1;
+	int ntimes = 0;
+
+	while (err != 3 && ntimes++ < 3)
+	{
+		std::string txturl = "null";
+		std::string imgurl = "null";
+		if (converted->txturl != NULL && converted->txturl != "")
+		{
+			txturl = converted->txturl;
+		}
+		if (converted->imgurl != NULL && converted->imgurl != "")
+		{
+			imgurl = converted->imgurl;
+		}
+		if (bSuccess)
+		{
+			err = lib_HttpPostMsg(g_strSuccessUrl, bSuccess, converted->fileid, converted->node, converted->txtstatus, converted->pagenumber, txturl.c_str(), imgurl.c_str(), 1);
+		}
+		else
+		{
+			err = lib_HttpPostMsg(g_strFailedUrl, bSuccess, converted->fileid, converted->node, converted->txtstatus, converted->pagenumber, txturl.c_str(), imgurl.c_str(), 1);
+		}
+	}
+
+
+
+	if (err != 3)
+	{
+		ShowErrorMsg(err, "", fileid, bSuccess);
+	}
+	else
+	{
+		ShowSuccessMsg(fileid, bSuccess);
+	}
+	return err;
+}
+int CConvertThread::PostSuccessOrFail(const string &msg, BOOL bSuccess)
+{
+	if (msg.empty() || msg == "") return 0;
+	string content;
+	int err = 1;
+	int ntimes = 0;
+	if (bSuccess)
+	{
+		while (err!=3&&ntimes++<3)
+		{
+// 			err = lib_HttpPostMsg(g_strSuccessUrl, msg.c_str(), 1);
+		}
+	}
+	else
+	{
+		while (err != 3 && ntimes++ < 3)
+		{
+//			err = lib_HttpPostMsg(g_strFailedUrl, msg.c_str(), 1);
+		}
+	}
+	return err;
+}
+
+
+string CConvertThread::BuildPostMsg(p_st_tconverted converted, BOOL bSuccess)
+{
+	Json::Value root;
+	Json::FastWriter writer;
+	if (NULL == converted)
+	{
+		return "";
+	}
+
+	Json::Value person;
+	person["id"] = converted->fileid;
+	if (converted->node != NULL)
+	{
+		person["node"] = converted->node;
+	}
+	else
+	{
+		person["node"] = "";
+	}
+	person["txtstatus"] = converted->txtstatus + 1;
+	if (bSuccess)
+	{
+		if (converted->imgurl != NULL)
+		{
+			person["imgurl"] = converted->imgurl;
+		}
+		else
+		{
+			person["imgurl"] = "";
+		}
+	}
+	person["pagenumber"] = converted->pagenumber;
+	if (converted->txturl != NULL)
+	{
+		person["txturl"] = converted->txturl;
+	}
+	else
+		person["txturl"] = "";
+	{
+	}
+	root.append(person);
+	delete converted;
+
+	string data = "data=" + writer.write(root);
+	return data;
 }
 
 void CConvertThread::SendMsgShow(p_st_tconverted sc, UINT msg, OutStatus status)

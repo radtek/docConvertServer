@@ -16,6 +16,15 @@ public:
 public:
 	virtual BOOL InitInstance();
 	virtual int ExitInstance();
+	
+	void ShowSuccessMsg(const int &fileid, BOOL bSuccess);
+	void ShowErrorMsg(const int &ret, const string &msg, const int &fileid, BOOL bSuccess);
+
+	int PostSuccessOrFail(p_st_tconverted converted, BOOL bSuccess);
+	int PostSuccessOrFail(const string &msg, BOOL bSuccess);
+
+
+	string BuildPostMsg(p_st_tconverted converted, BOOL bSuccess);
 
 	void SendMsgShow(p_st_tconverted sc, UINT msg, OutStatus status);
 

@@ -2,6 +2,7 @@
 #include "ConnectDB.h"
 #include "CppSQLite3.h"
 #include "docConvertServer.h"
+#include "Mylock.h"
 
 static CConnectDB *m_pConnectDb = NULL;
 
@@ -35,7 +36,7 @@ void CConnectDB::InitDB()
 		// 判断是否存在表emp、建立表
 		if (!m_pDb->tableExists("t_convert"))
 		{
-			m_pDb->execDML("create table t_convert(nid INTEGER PRIMARY KEY, fileid integer unique, softlink char(1024), filetype char(10), isoriginal integer, status integer);");
+			m_pDb->execDML("create table t_convert(nid INTEGER PRIMARY KEY, fileid integer unique, softlink char(1024), filetype char(10), isoriginal integer, status integer, trytimes integer);");
 		}
 #if _DEBUG
 		if (!m_pDb->tableExists("t_convert_success"))
@@ -65,10 +66,10 @@ void CConnectDB::ReleaseDB()
 int CConnectDB::insert_convert_table(p_st_tconvert tmsg)
 {
 	char sql[2000] = { 0 };
-	sprintf_s(sql, 2000, "insert into t_convert (fileid, softlink, filetype, isoriginal, status) values (%d, '%s', '%s', '%d', '%d');",
-		tmsg->fileid, tmsg->softlink, strFileType[tmsg->filetype], tmsg->isoriginal, tmsg->status);
+	sprintf_s(sql, 2000, "insert into t_convert (fileid, softlink, filetype, isoriginal, status, trytimes) values (%d, '%s', '%s', '%d', '%d', '%d');",
+		tmsg->fileid, tmsg->softlink, strFileType[tmsg->filetype], tmsg->isoriginal, tmsg->status, tmsg->trytimes);
 	int nRows = 0;
-	EnterCriticalSection(&m_csTConvert);
+	CMylock mylock(m_csTConvert);
 	try
 	{
 		nRows = m_pDb->execDML(sql);
@@ -77,7 +78,6 @@ int CConnectDB::insert_convert_table(p_st_tconvert tmsg)
 	{
 		nRows = 0;
 	}
-	LeaveCriticalSection(&m_csTConvert);
 	return nRows;
 }
 
@@ -87,7 +87,7 @@ int CConnectDB::delete_convert_table_all()
 	char sql[1024] = { 0 };
 	sprintf_s(sql, 1024, "delete from t_convert;");
 	int nRows = 0;
-	EnterCriticalSection(&m_csTConvert);
+	CMylock mylock(m_csTConvert);
 	try
 	{
 		nRows = m_pDb->execDML(sql);
@@ -96,7 +96,6 @@ int CConnectDB::delete_convert_table_all()
 	{
 		nRows = 0;
 	}
-	LeaveCriticalSection(&m_csTConvert);
 	return nRows;
 }
 
@@ -105,7 +104,7 @@ int CConnectDB::delete_convert_table(const int &nid)
 	char sql[1024] = { 0 };
 	sprintf_s(sql, 1024, "delete from t_convert where nid=%d;", nid);
 	int nRows = 0;
-	EnterCriticalSection(&m_csTConvert);
+	CMylock mylock(m_csTConvert);
 	try
 	{
 		nRows = m_pDb->execDML(sql);
@@ -114,7 +113,6 @@ int CConnectDB::delete_convert_table(const int &nid)
 	{
 		nRows = 0;
 	}
-	LeaveCriticalSection(&m_csTConvert);
 	return nRows;
 }
 
@@ -122,10 +120,10 @@ int CConnectDB::update_convert_table(p_st_tconvert tmsg)
 {
 	char sql[1024] = { 0 };
 	int nRows = 0;
-	sprintf_s(sql, 1024, "update t_convert set status=%d where nid=%d;",tmsg->status, tmsg->nid);
+	sprintf_s(sql, 1024, "update t_convert set status=%d, trytimes=%d where nid=%d;",tmsg->status, tmsg->trytimes, tmsg->nid);
 	try
 	{
-		EnterCriticalSection(&m_csTConvert);
+		CMylock mylock(m_csTConvert);
 		try
 		{
 			nRows = m_pDb->execDML(sql);
@@ -134,7 +132,6 @@ int CConnectDB::update_convert_table(p_st_tconvert tmsg)
 		{
 			nRows = 0;
 		}
-		LeaveCriticalSection(&m_csTConvert);
 	}
 	catch (...)
 	{
@@ -143,18 +140,18 @@ int CConnectDB::update_convert_table(p_st_tconvert tmsg)
 	return nRows;
 }
 
-int CConnectDB::query_convert_table(list<p_st_tconvert> &v_convert, int status)
+int CConnectDB::query_convert_table(list<p_st_tconvert> &v_convert, const int &ncount, const int status)
 {
 	char sql[1024] = { 0 };
 	if (status == -1)
 	{
-		sprintf_s(sql, 1024, "select * from t_convert;");
+		sprintf_s(sql, 1024, "select * from t_convert limit 0,%d;",ncount);
 	}
 	else
 	{
-		sprintf_s(sql, 1024, "select * from t_convert where status = %d;", status);
+		sprintf_s(sql, 1024, "select * from t_convert where status = '%d' limit 0,%d;", status, ncount);
 	}
-	EnterCriticalSection(&m_csTConvert);
+	CMylock mylock(m_csTConvert);
 	CppSQLite3Query q = m_pDb->execQuery(sql);
 
 
@@ -190,6 +187,7 @@ int CConnectDB::query_convert_table(list<p_st_tconvert> &v_convert, int status)
 
 		msg->isoriginal = atoi(q.fieldValue(4));
 		msg->status = 1;
+		msg->trytimes = atoi(q.fieldValue(6));
 
 // 		update_convert_table(msg);
 
@@ -197,7 +195,6 @@ int CConnectDB::query_convert_table(list<p_st_tconvert> &v_convert, int status)
 
 		q.nextRow();
 	}
-	LeaveCriticalSection(&m_csTConvert);
 
 	return v_convert.size();
 }
@@ -213,7 +210,7 @@ int CConnectDB::count_convert_table(const int &status)
 	{
 		sprintf_s(sql, 1024, "select * from t_convert where status = %d;", status);
 	}
-	EnterCriticalSection(&m_csTConvert);
+	CMylock mylock(m_csTConvert);
 	CppSQLite3Query q = m_pDb->execQuery(sql);
 
 
@@ -223,7 +220,6 @@ int CConnectDB::count_convert_table(const int &status)
 		ncount++;
 		q.nextRow();
 	}
-	LeaveCriticalSection(&m_csTConvert);
 	return ncount;
 }
 

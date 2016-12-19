@@ -29,7 +29,7 @@ public:
 
 	int update_convert_table(p_st_tconvert tmsg);
 
-	int query_convert_table(list<p_st_tconvert> &v_convert, int status = -1);
+	int query_convert_table(list<p_st_tconvert> &v_convert, const int &ncount, const int status = -1);
 
 	int count_convert_table(const int &status = 0);
 

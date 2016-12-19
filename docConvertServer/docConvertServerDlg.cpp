@@ -14,6 +14,9 @@
 #include "Util.h"
 #include "ConnectDB.h"
 
+#include <io.h>
+#include <fcntl.h>
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
@@ -80,7 +83,7 @@ CdocConvertServerDlg::CdocConvertServerDlg(CWnd* pParent /*=NULL*/)
 	m_pGetApiThread = NULL;
 	m_pGetConvertDataThread = NULL;
 	m_pPostResultThread = NULL;
-	for (int i = 0; i < 50; i++)
+	for (int i = 0; i < 100; i++)
 	{
 		m_pConvertThread[i] = NULL;
 	}
@@ -169,6 +172,8 @@ BOOL CdocConvertServerDlg::OnInitDialog()
 // 	StartGetConvertDataThread();
 // 	StartConvertThread();
 
+// 	InitConsoleWindow();
+
 	curl_global_init(CURL_GLOBAL_ALL);
 
 	wchar_t wp[100] = {};
@@ -189,6 +194,10 @@ BOOL CdocConvertServerDlg::OnInitDialog()
 	m_wndTabCtrl.InsertItem(1, L"ÉèÖÃ");
 
 	m_wndTabCtrl.SetCurSel(0);
+
+	COleDateTime now = COleDateTime::GetCurrentTime();
+	CString strnow = now.Format(L"%Y-%m-%d %H:%M:%S");
+	GetDlgItem(IDC_STARTTIME)->SetWindowTextW(strnow);
 
 
 	if (g_bAutoStart)
@@ -249,7 +258,16 @@ HCURSOR CdocConvertServerDlg::OnQueryDragIcon()
 	return static_cast<HCURSOR>(m_hIcon);
 }
 
-
+void CdocConvertServerDlg::InitConsoleWindow()
+{
+	int nCrt = 0;
+	FILE* fp;
+	AllocConsole();
+	nCrt = _open_osfhandle((long)GetStdHandle(STD_OUTPUT_HANDLE), _O_TEXT);
+	fp = _fdopen(nCrt, "w");
+	*stdout = *fp;
+	setvbuf(stdout, NULL, _IONBF, 0);
+}
 
 char* CdocConvertServerDlg::GetApiNode(const char* apiurl)
 {
@@ -576,6 +594,19 @@ void CdocConvertServerDlg::DrawWindow()
 	r1.bottom = r1.top + 25;
 	GetDlgItem(IDC_START)->MoveWindow(r1);
 
+	GetDlgItem(IDC_STATIC_STARTTIME)->GetClientRect(&r1);
+	r1.left  = r2.left;
+	r1.right = r1.left + 64;
+	r1.top = r2.bottom + 10;
+	r1.bottom = r1.top + 20;
+	GetDlgItem(IDC_STATIC_STARTTIME)->MoveWindow(r1);
+
+	GetDlgItem(IDC_STARTTIME)->GetClientRect(&r2);
+	r2 = r1;
+	r2.left = r1.right + 5;
+	r2.right = r2.left + 150;
+	GetDlgItem(IDC_STARTTIME)->MoveWindow(r2);
+
 	//ÉèÖÃ
 	//getapi
 	GetDlgItem(IDC_STATIC_GETAPI)->GetClientRect(&r3);
@@ -859,6 +890,8 @@ void CdocConvertServerDlg::UpTableShow()
 		GetDlgItem(IDC_LIST1)->ShowWindow(SW_SHOW);
 		GetDlgItem(IDC_LIST2)->ShowWindow(SW_SHOW);
 		GetDlgItem(IDC_START)->ShowWindow(SW_SHOW);
+		GetDlgItem(IDC_STATIC_STARTTIME)->ShowWindow(SW_SHOW);
+		GetDlgItem(IDC_STARTTIME)->ShowWindow(SW_SHOW);
 		//
 		GetDlgItem(IDC_STATIC_GETAPI)->ShowWindow(SW_HIDE);
 		GetDlgItem(IDC_GETAPI)->ShowWindow(SW_HIDE);
@@ -906,6 +939,9 @@ void CdocConvertServerDlg::UpTableShow()
 		GetDlgItem(IDC_LIST1)->ShowWindow(SW_HIDE);
 		GetDlgItem(IDC_LIST2)->ShowWindow(SW_HIDE);
 		GetDlgItem(IDC_START)->ShowWindow(SW_HIDE);
+		GetDlgItem(IDC_STATIC_STARTTIME)->ShowWindow(SW_HIDE);
+		GetDlgItem(IDC_STARTTIME)->ShowWindow(SW_HIDE);
+
 		//
 		GetDlgItem(IDC_STATIC_GETAPI)->ShowWindow(SW_SHOW);
 		GetDlgItem(IDC_GETAPI)->ShowWindow(SW_SHOW);
@@ -1085,7 +1121,9 @@ void CdocConvertServerDlg::OnBnClickedStart()
 {
 	StartGetApiThread();
 	StartGetConvertDataThread();
+#ifndef SYNC_POST_RESULT
 	StartPostResultThread();
+#endif
 	StartConvertThread();
 
 	GetDlgItem(IDC_START)->EnableWindow(FALSE);
@@ -1159,14 +1197,14 @@ void CdocConvertServerDlg::AddListCtrl(p_st_msg sm)
 	// 	if (m_wndListMsg.GetItemCount() > 1000) m_wndListMsg.DeleteItem(0);
 	int nid = m_wndListCtrl.GetItemCount();
 
-	if (nid > g_nThreadNumber + 5)
+	if (nid > g_nThreadNumber+6)
 	{
 		for (int i = 0; i < nid; i++)
 		{
-			CString strtemp = m_wndListCtrl.GetItemText(i, 5);
+			CString strtemp = m_wndListCtrl.GetItemText(i, 4);
 			if (strtemp.Compare(strConvertStatus[WaitConvert]) == 0)
 			{
-				CString strtime = m_wndListCtrl.GetItemText(i, 4);
+				CString strtime = m_wndListCtrl.GetItemText(i, 3);
 				COleDateTime oleDate;
 				oleDate.ParseDateTime(strtime);
 				COleDateTime now = COleDateTime::GetCurrentTime();
@@ -1207,10 +1245,12 @@ void CdocConvertServerDlg::UpdateListCtrl(p_st_msg sm, OutStatus status)
 	int ncount = m_wndListCtrl.GetItemCount();
 	for (int i = 0; i < ncount; i++)
 	{
-		CString strtemp = m_wndListCtrl.GetItemText(i, 1);
-		int fileid = _ttoi(strtemp);
+		CString strtempid = m_wndListCtrl.GetItemText(i, 1);
+		CString strtempthreadid = m_wndListCtrl.GetItemText(i, 0);
+		int fileid = _ttoi(strtempid);
+		int threadid = _ttoi(strtempthreadid);
 		// 		printf("id = %d\n", fileid);
-		if (fileid == sm->sc->fileid)
+		if (fileid == sm->sc->fileid && threadid == sm->threadid)
 		{
 			m_wndListCtrl.SetItemText(i, 4, strConvertStatus[status]);
 
@@ -1247,12 +1287,12 @@ afx_msg LRESULT CdocConvertServerDlg::OnMsgListctrlAdd(WPARAM wParam, LPARAM lPa
 			// 			printf("add msg : id = %d,  fileid = %d , filetype = %d \n", sm->sc->id, sm->sc->fileid, sm->sc->type);
 			if (sm->sc->fileid < 0)
 			{
-				delete sm->sc;
+// 				delete sm->sc;
 				delete sm;
 				return 0;
 			}
 			AddListCtrl(sm);
-			delete sm->sc;
+// 			delete sm->sc;
 			delete sm;
 		}
 	}
@@ -1274,12 +1314,12 @@ afx_msg LRESULT CdocConvertServerDlg::OnMsgListctrlUpdate(WPARAM wParam, LPARAM 
 // 				WriteLog(g_strLogPath, logmsg);
 				ShowMsgList(logmsg);
 
-				delete sm->sc;
+// 				delete sm->sc;
 				delete sm;
 				return 0;
 			}
 			UpdateListCtrl(sm, (OutStatus)wParam);
-			delete sm->sc;
+// 			delete sm->sc;
 			delete sm;
 		}
 	}

@@ -24,17 +24,17 @@ CString CMyHttp::getFileNameFormUrl(const CString &strurl)
 		i = filename.Find(L"/");
 	}
 	if (filename != strurl)
-		return filename;
+		return filename; 
 	else
 		return L"";
 }
 
 BOOL CMyHttp::Download(const  CString &  strFileURLInServer,  // 待下载文件的URL 
-	const  CString  &  strFileLocalFullPath) // 存放到本地的路径 
+	const  CString  &  strFileLocalFullPath, CString &strfilename) // 存放到本地的路径 
 {
 	ASSERT(strFileURLInServer != "");
 	ASSERT(strFileLocalFullPath != "");
-	CString strfilename = strFileLocalFullPath + getFileNameFormUrl(strFileURLInServer);
+	strfilename = strFileLocalFullPath + getFileNameFormUrl(strFileURLInServer);
 	CInternetSession session;
 	CHttpConnection *  pHttpConnection = NULL;
 	CHttpFile *  pHttpFile = NULL;

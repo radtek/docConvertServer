@@ -25,6 +25,8 @@ public:
 	virtual void DoDataExchange(CDataExchange* pDX);	// DDX/DDV 支持
 
 public:
+	void InitConsoleWindow();
+
 	char* GetApiNode(const char* apiurl);
 
 	void ReadIni();
@@ -54,7 +56,7 @@ public:
 public:
 	CGetAPIDataThread* m_pGetApiThread;
 	CGetConvertDataThread* m_pGetConvertDataThread;
-	CConvertThread* m_pConvertThread[50];
+	CConvertThread* m_pConvertThread[100];
 	CPostResultThread* m_pPostResultThread;
 // 实现
 protected:

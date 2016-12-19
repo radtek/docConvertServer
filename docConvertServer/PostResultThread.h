@@ -18,8 +18,11 @@ public:
 	virtual BOOL InitInstance();
 	virtual int ExitInstance();
 
+	void ShowSuccessMsg(const int &count, const int &ntype);
+	void ShowErrorMsg(const int &ret, const string &msg, const int &ntype);
+
 	string BuildPostMsg(list<p_st_tconverted> &lists, const BOOL bSuccess);
-	int PostSuccessOrFail(string msg, const BOOL bSuccess);
+	int PostSuccessOrFail(const string &msg, const BOOL bSuccess);
 	int PostSuccessOrFail(list<p_st_tconverted> lists, const BOOL bSuccess);
 	void ResolvePostResult(Json::Value &value, int &status, const std::string &path = "");
 	int HttpPostMsg(const char *url, const string & postdata, string & content);

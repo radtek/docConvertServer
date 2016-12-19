@@ -42,6 +42,38 @@ const char strOutFileType[][100] = { "txt", "png", "jpg" };
 typedef struct ST_DOMAIN2PATH
 {
 	ST_DOMAIN2PATH(){ domain = NULL; path = NULL; txtpath = NULL; txthttp = NULL; imgpath = NULL; imghttp = NULL; }
+	void UnInit(){
+		if (domain != NULL)
+		{
+			delete[] domain;
+			domain = NULL;
+		}
+		if (path != NULL)
+		{
+			delete[] path;
+			path = NULL;
+		}
+		if (txtpath != NULL)
+		{
+			delete[] txtpath;
+			txtpath = NULL;
+		}
+		if (txthttp != NULL)
+		{
+			delete[] txthttp;
+			txthttp = NULL;
+		}
+		if (imgpath != NULL)
+		{
+			delete[] imgpath;
+			imgpath = NULL;
+		}
+		if (imghttp != NULL)
+		{
+			delete[] imghttp;
+			imghttp = NULL;
+		}
+	}
 	char *domain;
 	char *path;
 	char *txtpath;
@@ -54,18 +86,43 @@ typedef struct ST_DOMAIN2PATH
 
 typedef struct ST_T_CONVERT
 {
-	ST_T_CONVERT(){ softlink = NULL; status = 0; }
+	ST_T_CONVERT(){ softlink = NULL; status = 0; trytimes = 0; }
+	~ST_T_CONVERT(){
+		if (softlink != NULL)
+		{
+			delete[] softlink;
+			softlink = NULL;
+		}
+	}
 	int nid;
 	int fileid;
 	char *softlink;
 	int filetype;
 	int isoriginal;
 	int status;
+	int trytimes;
 }st_tconvert, *p_st_tconvert;
 
 typedef struct ST_T_CONVERTED
 {
 	ST_T_CONVERTED(){ node = NULL; txturl = NULL; imgurl = NULL; pagenumber = 0; }
+	~ST_T_CONVERTED(){
+		if (node != NULL)
+		{
+			delete[] node;
+			node = NULL;
+		}
+		if (txturl != NULL)
+		{
+			delete[] txturl;
+			txturl = NULL;
+		}
+		if (imgurl != NULL)
+		{
+			delete[] imgurl;
+			imgurl = NULL;
+		}
+	}
 	int nid;
 	int fileid;
 	int filetype;
@@ -78,6 +135,14 @@ typedef struct ST_T_CONVERTED
 }st_tconverted, *p_st_tconverted;
 
 typedef struct ST_MSG{
+	ST_MSG(){ sc = NULL; }
+	~ST_MSG(){
+		if (sc != NULL)
+		{
+			delete sc;
+			sc = NULL;
+		}
+	}
 	int threadid;
 	p_st_tconverted sc;
 }st_msg, *p_st_msg;

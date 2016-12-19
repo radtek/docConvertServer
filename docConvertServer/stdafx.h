@@ -56,3 +56,6 @@
 #define MSG_LISTCTRL_ADD WM_USER + 0x31
 #define MSG_LISTCTRL_UPDATE WM_USER + 0x32
 #define MSG_MSG_LOG WM_USER + 0x33
+
+//转换完成后同步发送http信息
+/*#define SYNC_POST_RESULT*/

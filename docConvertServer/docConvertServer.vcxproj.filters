@@ -60,6 +60,9 @@
     <ClInclude Include="MyHttp.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="Mylock.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="docConvertServer.cpp">
@@ -93,6 +96,9 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="MyHttp.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Mylock.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

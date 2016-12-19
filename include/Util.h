@@ -50,6 +50,7 @@ static char* WCharToChar(wchar_t* wstr,int nlen)
 static CString CharToCString(const char *ch)
 {
 	int num = MultiByteToWideChar(0, 0, ch, -1, NULL, 0);
+	if (num > 20000) return L"";
 	wchar_t *wide = new wchar_t[num];
 	MultiByteToWideChar(0, 0, ch, -1, wide, num);
 	CString str(wide);
@@ -506,6 +507,18 @@ static char *get_file_name(const char *strbuf, char *filename)
 	return filename;
 }
 
+static void getFileNameFormUrl(char* fileName, const char* url)
+{
+	string strurl(url);
+	if (strurl.find("://") < 0) return;
+	int i = strurl.find_last_of("/");
+	if (i >= 0)
+	{
+		strurl = strurl.substr(i + 1);
+		strcpy(fileName, strurl.c_str());
+	}
+	return;
+}
 
 static void ParseOutFilePath(const char *filepath, const char *outpath, char *outfilepath, char *filename)
 {

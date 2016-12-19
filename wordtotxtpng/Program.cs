@@ -55,10 +55,10 @@ namespace wordtotxtpng
         {
             int len = args.Length;
             if (len != 9) return;
-            foreach (string arg in args)
-            {
-                Console.WriteLine(arg);
-            }
+//             foreach (string arg in args)
+//             {
+//                 Console.WriteLine(arg);
+//             }
 
             sourcefile = args[0];
             outtxtpath = args[1];
@@ -149,6 +149,7 @@ namespace wordtotxtpng
                             writer.Close();
                         }
                         reader.Close();
+                        ExecuteRegexTxt(txtpath);
                         return (int)OutStatus.ConvertSuccess;
                     }
                     catch (Exception exception)
@@ -196,6 +197,38 @@ namespace wordtotxtpng
                 }
             }
         }
+
+
+        private static void ExecuteRegexTxt(string sourcefile)
+        {
+            if (sourcefile != null && !sourcefile.Equals(""))
+            {
+                string command = sourcefile;
+                Process process = new Process();//创建进程对象  
+                ProcessStartInfo startInfo = new ProcessStartInfo();
+                startInfo.FileName = "regexTxt.exe";//设定需要执行文件  
+                startInfo.Arguments = command;//执行参数  
+                startInfo.UseShellExecute = false;//不使用系统外壳程序启动  
+                startInfo.RedirectStandardInput = false;//不重定向输入  
+                startInfo.RedirectStandardOutput = true; //重定向输出  
+                startInfo.CreateNoWindow = true;//不创建窗口  
+                process.StartInfo = startInfo;
+                try
+                {
+                    if (process.Start())//开始进程  
+                    {
+                        //                         process.WaitForExit(10); //等待进程结束，等待时间为指定的毫秒  
+                    }
+                }
+                catch
+                {
+                }
+                finally
+                {
+                }
+            }
+        }
+
         #endregion
 
     }

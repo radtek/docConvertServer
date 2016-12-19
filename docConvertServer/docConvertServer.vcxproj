@@ -54,7 +54,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_WINDOWS;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>..\include;..\libWordConvert;..\libExcelConvert;..\libPptConvert;..\libPdfConvert;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\include;..\libWordConvert;..\libExcelConvert;..\libPptConvert;..\libPdfConvert;..\libDownfile;..\libHttpPost;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>4996;%(DisableSpecificWarnings)</DisableSpecificWarnings>
     </ClCompile>
     <Link>
@@ -118,6 +118,7 @@
     <ClInclude Include="GetAPIDataThread.h" />
     <ClInclude Include="GetConvertDataThread.h" />
     <ClInclude Include="MyHttp.h" />
+    <ClInclude Include="Mylock.h" />
     <ClInclude Include="PostResultThread.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="stdafx.h" />
@@ -134,6 +135,7 @@
     <ClCompile Include="GetAPIDataThread.cpp" />
     <ClCompile Include="GetConvertDataThread.cpp" />
     <ClCompile Include="MyHttp.cpp" />
+    <ClCompile Include="Mylock.cpp" />
     <ClCompile Include="PostResultThread.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
@@ -150,8 +152,14 @@
     <Image Include="res\docConvertServer.ico" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\libDownfile\libDownfile.vcxproj">
+      <Project>{feed8f09-fdeb-412a-871e-147e5cb396da}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\libExcelConvert\libExcelConvert.vcxproj">
       <Project>{3a771380-6071-427a-a969-042d11d9c6df}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\libHttpPost\libHttpPost.vcxproj">
+      <Project>{7de7a192-5b32-4956-8bb9-34fd007349e0}</Project>
     </ProjectReference>
     <ProjectReference Include="..\libPdfConvert\libPdfConvert.vcxproj">
       <Project>{0fad0808-3331-4f49-b438-4b6924e5a3f4}</Project>

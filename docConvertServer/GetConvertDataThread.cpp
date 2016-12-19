@@ -48,38 +48,63 @@ int CGetConvertDataThread::Run()
 	sprintf_s(showmsg, 1024, "待转文件获取线程 --- 启动成功");
 	PostMessageA(m_hMainWnd, WM_MSGLIST_SHOW, 0, (LPARAM)showmsg);
 
+	list<p_st_tconvert> templist;
+
 	g_mtxConvert.Lock();
-	CConnectDB::GetInstance()->query_convert_table(g_ltConvert);
+	CConnectDB::GetInstance()->query_convert_table(g_ltConvert, 500);
 	list<p_st_tconvert>::iterator it = g_ltConvert.begin();
 	while (it != g_ltConvert.end())
 	{
-		int bok = CConnectDB::GetInstance()->update_convert_table((p_st_tconvert)*it);
+		if ((*it)->status == 0)
+		{
+			int bok = CConnectDB::GetInstance()->update_convert_table((p_st_tconvert)*it);
+		}
 		it++;
 	}
 	g_mtxConvert.Unlock();
 
-	int times = 6;
+	int times = 10;
 	while (WaitForSingleObject(m_hKillEvent,100) != WAIT_OBJECT_0 )
 	{
 		if (m_bAbort) break;
 
 		if (times-- > 0) continue;
-		times = 6;
+		times = 10;
 
 		g_mtxConvert.Lock();
-		if (g_ltConvert.size() != 0)
+		int nltsize = g_ltConvert.size();
+		printf("***GetConvertData ltConvert size = %d ***\n", nltsize);
+		if (nltsize > 80)
 		{
 			g_mtxConvert.Unlock();
 			continue;
 		}
-		int ncount = CConnectDB::GetInstance()->query_convert_table(g_ltConvert, 0);
-		list<p_st_tconvert>::iterator it = g_ltConvert.begin();
-		while (it != g_ltConvert.end())
-		{
-			int bok = CConnectDB::GetInstance()->update_convert_table((p_st_tconvert)*it);			
-			it++;
-		}
 		g_mtxConvert.Unlock();
+
+		int ncount = CConnectDB::GetInstance()->query_convert_table(templist, 300, 0);
+		if (templist.size() > 0)
+		{
+			list<p_st_tconvert>::iterator it = templist.begin();
+			while (it != templist.end())
+			{
+				g_mtxConvert.Lock();
+				g_ltConvert.push_back(*it);
+				g_mtxConvert.Unlock();
+				it++;
+			}
+			templist.clear();
+		}
+		if (templist.size() > 0)
+		{
+			list<p_st_tconvert>::iterator it = templist.begin();
+			while (it != templist.end())
+			{
+				int bok = CConnectDB::GetInstance()->update_convert_table((p_st_tconvert)*it);
+				it++;
+			}
+			templist.clear();
+		}
+
 	}
 
 	return 0;

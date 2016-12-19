@@ -199,18 +199,19 @@ void CdocConvertServerApp::ReleaseGlobalData()
 		vector<p_st_domain2path>::iterator it = g_vtDomainPath.begin();
 		while (it != g_vtDomainPath.end())
 		{
-			if (((p_st_domain2path)*it)->domain != NULL)
-				delete[]((p_st_domain2path)*it)->domain;
-			if (((p_st_domain2path)*it)->path != NULL)
-				delete[]((p_st_domain2path)*it)->path;
-			if (((p_st_domain2path)*it)->txtpath != NULL)
-				delete[]((p_st_domain2path)*it)->txtpath;
-			if (((p_st_domain2path)*it)->txthttp != NULL)
-				delete[]((p_st_domain2path)*it)->txthttp;
-			if (((p_st_domain2path)*it)->imgpath != NULL)
-				delete[]((p_st_domain2path)*it)->imgpath;
-			if (((p_st_domain2path)*it)->imghttp != NULL)
-				delete[]((p_st_domain2path)*it)->imghttp;
+// 			if (((p_st_domain2path)*it)->domain != NULL)
+// 				delete[]((p_st_domain2path)*it)->domain;
+// 			if (((p_st_domain2path)*it)->path != NULL)
+// 				delete[]((p_st_domain2path)*it)->path;
+// 			if (((p_st_domain2path)*it)->txtpath != NULL)
+// 				delete[]((p_st_domain2path)*it)->txtpath;
+// 			if (((p_st_domain2path)*it)->txthttp != NULL)
+// 				delete[]((p_st_domain2path)*it)->txthttp;
+// 			if (((p_st_domain2path)*it)->imgpath != NULL)
+// 				delete[]((p_st_domain2path)*it)->imgpath;
+// 			if (((p_st_domain2path)*it)->imghttp != NULL)
+// 				delete[]((p_st_domain2path)*it)->imghttp;
+			(*it)->UnInit();
 			delete (p_st_domain2path)*it;
 			it++;
 		}
@@ -222,8 +223,8 @@ void CdocConvertServerApp::ReleaseGlobalData()
 		list<p_st_tconvert>::iterator it = g_ltConvert.begin();
 		while (it != g_ltConvert.end())
 		{
-			if (((p_st_tconvert)*it)->softlink != NULL)
-				delete[]((p_st_tconvert)*it)->softlink;
+// 			if (((p_st_tconvert)*it)->softlink != NULL)
+// 				delete[]((p_st_tconvert)*it)->softlink;
 
 			delete (p_st_tconvert)*it;
 			it++;
@@ -236,10 +237,10 @@ void CdocConvertServerApp::ReleaseGlobalData()
 		list<p_st_tconverted>::iterator it = g_ltConvertSuccess.begin();
 		while (it != g_ltConvertSuccess.end())
 		{
-			if (((p_st_tconverted)*it)->txturl != NULL)
-				delete[]((p_st_tconverted)*it)->txturl;
-			if (((p_st_tconverted)*it)->imgurl != NULL)
-				delete[]((p_st_tconverted)*it)->imgurl;
+// 			if (((p_st_tconverted)*it)->txturl != NULL)
+// 				delete[]((p_st_tconverted)*it)->txturl;
+// 			if (((p_st_tconverted)*it)->imgurl != NULL)
+// 				delete[]((p_st_tconverted)*it)->imgurl;
 
 			delete (p_st_tconverted)*it;
 			it++;
@@ -252,10 +253,10 @@ void CdocConvertServerApp::ReleaseGlobalData()
 		list<p_st_tconverted>::iterator it = g_ltConvertFailed.begin();
 		while (it != g_ltConvertFailed.end())
 		{
-			if (((p_st_tconverted)*it)->txturl != NULL)
-				delete[]((p_st_tconverted)*it)->txturl;
-			if (((p_st_tconverted)*it)->imgurl != NULL)
-				delete[]((p_st_tconverted)*it)->imgurl;
+// 			if (((p_st_tconverted)*it)->txturl != NULL)
+// 				delete[]((p_st_tconverted)*it)->txturl;
+// 			if (((p_st_tconverted)*it)->imgurl != NULL)
+// 				delete[]((p_st_tconverted)*it)->imgurl;
 
 			delete (p_st_tconverted)*it;
 			it++;

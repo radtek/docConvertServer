@@ -7,18 +7,6 @@
 
 double curDownloadLen;
 
-void getFileNameFormUrl(char* fileName, const char* url)
-{
-	string strurl(url);
-	if (strurl.find("://") < 0) return;
-	int i = strurl.find_last_of("/");
-	if (i >= 0)
-	{
-		strurl = strurl.substr(i + 1);
-		strcpy(fileName, strurl.c_str());
-	}
-	return;
-}
 
 /* 得到本地文件大小的函数, 若不是续传则返回0, 否则返回指定路径地址的文件大小 */
 long getLocalFileLenth(const char* localPath)

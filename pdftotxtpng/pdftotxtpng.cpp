@@ -780,7 +780,7 @@ void RegexTxt(char *sourcefile, char *filter, char *replacestr)
 	si.cbReserved2 = NULL;
 	si.lpReserved2 = NULL;
 
-	sprintf(paramstr, "regexTxt.exe %s %s %s", sourcefile, filter, replacestr);
+	sprintf(paramstr, "regexTxt.exe %s", sourcefile);
 
 	BOOL ret = CreateProcessA(NULL, paramstr, NULL, NULL, FALSE, NORMAL_PRIORITY_CLASS, NULL, NULL, &si, &pi);
 
