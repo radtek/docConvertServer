@@ -5,6 +5,8 @@
 #include "docConvertServer.h"
 #include "PostResultThread.h"
 #include <algorithm> // sort
+#include "ConnectDB.h"
+
 
 
 // CPostResultThread
@@ -72,7 +74,8 @@ int CPostResultThread::Run()
 		int ncount_suc = g_ltConvertSuccess.size();
 		if (g_ltConvertSuccess.size() >= 20 || ((nowtime - lastSuccessPostTime) > COleDateTimeSpan(0, 0, 0, 10) && ncount_suc > 0))
 		{
-			string postmsg = BuildPostMsg(g_ltConvertSuccess, TRUE);
+			list<p_st_tconverted> lt_save_db;
+			string postmsg = BuildPostMsg(g_ltConvertSuccess, lt_save_db, TRUE);
 			g_ltConvertSuccess.clear();
 			g_mtxConvertSuccess.Unlock();
 			int ret = PostSuccessOrFail(postmsg, TRUE);
@@ -88,6 +91,9 @@ int CPostResultThread::Run()
 			}
 			else
 			{
+#ifdef USE_SAVE_SUCCESS_RECORD
+				CConnectDB::GetInstance()->insert_converted_table(lt_save_db);
+#endif
 				ShowSuccessMsg(ncount_suc, 1);
 			}
 
@@ -102,7 +108,8 @@ int CPostResultThread::Run()
 		int ncount_err = g_ltConvertFailed.size();
 		if (g_ltConvertFailed.size() >= 20 || ((nowtime - lastFailedPostTime) > COleDateTimeSpan(0, 0, 0, 10) && ncount_err > 0))
 		{
-			string postmsg = BuildPostMsg(g_ltConvertFailed, FALSE);
+			list<p_st_tconverted> lt_save_db;
+			string postmsg = BuildPostMsg(g_ltConvertFailed, lt_save_db, FALSE);
 			g_ltConvertFailed.clear();
 			g_mtxConvertFailed.Unlock();
 			int ret = PostSuccessOrFail(postmsg, FALSE);
@@ -119,6 +126,9 @@ int CPostResultThread::Run()
 			}
 			else
 			{
+#ifdef USE_SAVE_SUCCESS_RECORD
+				CConnectDB::GetInstance()->insert_converted_table(lt_save_db);
+#endif
 				ShowSuccessMsg(ncount_err, 0);
 			}
 
@@ -169,7 +179,7 @@ void CPostResultThread::ShowErrorMsg(const int &ret, const string &msg, const in
 #endif
 }
 
-string CPostResultThread::BuildPostMsg(list<p_st_tconverted> &lists, const BOOL bSuccess)
+string CPostResultThread::BuildPostMsg(list<p_st_tconverted> &lists, list<p_st_tconverted> &outlist, const BOOL bSuccess)
 {
 	list<p_st_tconverted>::iterator it = lists.begin();
 	Json::Value root;
@@ -218,20 +228,12 @@ string CPostResultThread::BuildPostMsg(list<p_st_tconverted> &lists, const BOOL 
 		}
 		root.append(person);
 
-// 		if ((*it)->node != NULL)
-// 		{
-// 			delete[](*it)->node;
-// 		}
-// 		if ((*it)->imgurl != NULL)
-// 		{
-// 			delete[](*it)->imgurl;
-// 		}
-// 		if ((*it)->txturl != NULL)
-// 		{
-// 			delete[](*it)->txturl;
-// 		}
+#ifdef USE_SAVE_SUCCESS_RECORD
+		outlist.push_back(*it);
+#else
 		delete *it;
 		*it = NULL;
+#endif
 
 		it++;
 	}

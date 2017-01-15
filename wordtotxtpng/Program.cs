@@ -203,7 +203,7 @@ namespace wordtotxtpng
         {
             if (sourcefile != null && !sourcefile.Equals(""))
             {
-                string command = sourcefile;
+                string command = sourcefile + " 0";
                 Process process = new Process();//创建进程对象  
                 ProcessStartInfo startInfo = new ProcessStartInfo();
                 startInfo.FileName = "regexTxt.exe";//设定需要执行文件  

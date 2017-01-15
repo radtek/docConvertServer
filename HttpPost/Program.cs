@@ -71,7 +71,7 @@ namespace HttpPost
             int status = Post(url, context);
             PostThreadMessage(threadid, WM_MSG_HTTPPOST, status, 0);
 
-            Console.ReadLine();
+//             Console.ReadLine();
         }
 
         /// <summary>  

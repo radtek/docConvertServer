@@ -33,6 +33,11 @@ public:
 
 	int count_convert_table(const int &status = 0);
 
+#ifdef USE_SAVE_POST_SUCCESS_RECORD
+	int insert_converted_table(p_st_tconverted tmsg);
+	int insert_converted_table(list<p_st_tconverted> listmsg);
+#endif
+
 	int insert_convert_success_table(p_st_tconverted tmsg);
 
 	int delete_convert_success_table(const int &nid);
@@ -52,6 +57,7 @@ public:
 private:
 	CppSQLite3DB *m_pDb;
 	CRITICAL_SECTION m_csTConvert;
+	CRITICAL_SECTION m_csTConverted;
 	CRITICAL_SECTION m_csTConvertSuccess;
 	CRITICAL_SECTION m_csTConvertFailed;
 };

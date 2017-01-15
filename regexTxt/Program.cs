@@ -19,13 +19,15 @@ namespace regexTxt
         private static int maxTxtSize = 0;
         private static Dictionary<string, string> FilterList = new Dictionary<string, string>();
         private static string filepath;
+        private static int type;//0-office; 1-pdf
         static void Main(string[] args)
         {
-            if (args.Count<string>() != 1)
+            if (args.Count<string>() != 2)
             {
                 return;
             }
             filepath = args[0];
+            type = int.Parse(args[1]);
 
             string inifile = System.AppDomain.CurrentDomain.SetupInformation.ApplicationBase + "docConvertServer.ini";
             maxTxtSize = int.Parse(ReadIniData("CONFIG", "TXTMAXSIZE", "0", inifile)) * 1024;
@@ -59,19 +61,27 @@ namespace regexTxt
         {
             try
             {
-                using (StreamReader reader = new StreamReader(fileName, Encoding.Default))
+                if(type == 0)
                 {
-                    char[] buffer = new char[maxTxtSize];
-                    reader.Read(buffer, 0, maxTxtSize);
-                    OutStr = new string(buffer);
-                    OutStr = OutStr.TrimEnd(new char[1]);
-                    reader.Close();
+                    using (StreamReader reader = new StreamReader(fileName, Encoding.Default))
+                    {
+                        OutStr = reader.ReadToEnd();
+                        reader.Close();
+                    }
+                }
+                else
+                {
+                    using (StreamReader reader = new StreamReader(fileName, Encoding.UTF8))
+                    {
+                        OutStr = reader.ReadToEnd();
+                        reader.Close();
+                    }
                 }
                 return true;
             }
             catch (Exception exception)
             {
-                Console.WriteLine("截取txt【" + fileName + "】出错", exception);
+                Console.WriteLine("读取txt【" + fileName + "】出错", exception);
                 return false;
             }
         }
@@ -102,11 +112,11 @@ namespace regexTxt
         {
             try
             {
+                OutPutStr = FilterStr(OutPutStr, FilterList);
                 if (OutPutStr.Length > maxTxtSize)
                 {
                     OutPutStr = OutPutStr.Substring(0, maxTxtSize);
                 }
-                OutPutStr = FilterStr(OutPutStr, FilterList);
                 return true;
             }
             catch (Exception exception)

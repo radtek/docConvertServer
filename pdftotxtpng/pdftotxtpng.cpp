@@ -348,8 +348,9 @@ int InitFPdfSdk()
 
 	// 	HINSTANCE hInstance= ::AfxGetInstanceHandle();
 
-	pdf_unlock("SDKRDTEMP", "921315A06BD486EBC0792D60A826A5C4455E33A8");
 	pdf_init(hInstance);
+	pdf_unlock("SDKRD1782", "5D82D31BCC168F133AD8D33D9AB430815A9EEFE2");
+// 	pdf_unlock("SDKRDTEMP", "921315A06BD486EBC0792D60A826A5C4455E33A8");
 
 	return 0;
 }
@@ -780,7 +781,7 @@ void RegexTxt(char *sourcefile, char *filter, char *replacestr)
 	si.cbReserved2 = NULL;
 	si.lpReserved2 = NULL;
 
-	sprintf(paramstr, "regexTxt.exe %s", sourcefile);
+	sprintf(paramstr, "regexTxt.exe %s 1", sourcefile);
 
 	BOOL ret = CreateProcessA(NULL, paramstr, NULL, NULL, FALSE, NORMAL_PRIORITY_CLASS, NULL, NULL, &si, &pi);
 

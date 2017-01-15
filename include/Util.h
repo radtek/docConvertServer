@@ -663,7 +663,7 @@ static void WriteLog(char *path, char *msg)
 			}
 #endif
 		}
-		catch (CException* e)
+		catch (...)
 		{
 			nfirst = 1;
 		}
@@ -691,7 +691,7 @@ static void WriteLog(char *path, char *msg)
 			delete[] wmsg;
 #endif
 		}
-		catch (CException* e)
+		catch (...)
 		{
 			nfirst = 1;
 		}

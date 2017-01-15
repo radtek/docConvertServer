@@ -21,7 +21,7 @@ public:
 	void ShowSuccessMsg(const int &count, const int &ntype);
 	void ShowErrorMsg(const int &ret, const string &msg, const int &ntype);
 
-	string BuildPostMsg(list<p_st_tconverted> &lists, const BOOL bSuccess);
+	string BuildPostMsg(list<p_st_tconverted> &lists, list<p_st_tconverted> &outlist, const BOOL bSuccess);
 	int PostSuccessOrFail(const string &msg, const BOOL bSuccess);
 	int PostSuccessOrFail(list<p_st_tconverted> lists, const BOOL bSuccess);
 	void ResolvePostResult(Json::Value &value, int &status, const std::string &path = "");

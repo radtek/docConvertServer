@@ -59,3 +59,6 @@
 
 //转换完成后同步发送http信息
 /*#define SYNC_POST_RESULT*/
+
+//是否保存提交成功的记录
+// #define USE_SAVE_POST_SUCCESS_RECORD

@@ -11,6 +11,7 @@ CConnectDB::CConnectDB()
 	m_pDb = NULL;
 	InitDB();
 	InitializeCriticalSection(&m_csTConvert);
+	InitializeCriticalSection(&m_csTConverted);
 	InitializeCriticalSection(&m_csTConvertSuccess);
 	InitializeCriticalSection(&m_csTConvertFailed);
 }
@@ -20,6 +21,7 @@ CConnectDB::~CConnectDB()
 {
 	ReleaseDB();
 	DeleteCriticalSection(&m_csTConvert);
+	DeleteCriticalSection(&m_csTConverted);
 	DeleteCriticalSection(&m_csTConvertSuccess);
 	DeleteCriticalSection(&m_csTConvertFailed);
 }
@@ -39,7 +41,13 @@ void CConnectDB::InitDB()
 			m_pDb->execDML("create table t_convert(nid INTEGER PRIMARY KEY, fileid integer unique, softlink char(1024), filetype char(10), isoriginal integer, status integer, trytimes integer);");
 		}
 #if _DEBUG
-		if (!m_pDb->tableExists("t_convert_success"))
+#ifdef USE_SAVE_POST_SUCCESS_RECORD
+		if (!m_pDb->tableExists("t_converted"))
+		{
+			m_pDb->execDML("create table t_converted(nid INTEGER PRIMARY KEY, fileid integer, time char(64), node float, txtstatus integer,pagenumber integer);");
+		}
+#endif
+		if (!m_pDb->tableExists("t_convert_success")) 
 		{
 			m_pDb->execDML("create table t_convert_success(nid INTEGER PRIMARY KEY, fileid integer unique, node float, txtstatus integer, txturl char(1024), imgstatus interger, imgurl char(1024), pagenumber integer);");
 		}
@@ -223,6 +231,39 @@ int CConnectDB::count_convert_table(const int &status)
 	return ncount;
 }
 
+//////////////////////////////////////////////////////////////////////////
+#ifdef USE_SAVE_POST_SUCCESS_RECORD
+int CConnectDB::insert_converted_table(p_st_tconverted tmsg)
+{
+	char sql[1024] = { 0 };
+	sprintf_s(sql, 1024, "insert into t_converted (fileid, time, node, txtstatus, pagenumber) values (%d, datetime('now','localtime'), '%s', '%d', '%d');",
+		tmsg->fileid, tmsg->node, tmsg->txtstatus, tmsg->pagenumber);
+	CMylock mylock(m_csTConvert);
+	int nRows = m_pDb->execDML(sql);
+	return nRows;
+}
+
+int CConnectDB::insert_converted_table(list<p_st_tconverted> listmsg)
+{
+	int nRows = 0;
+	list<p_st_tconverted>::iterator it = listmsg.begin();
+	while (listmsg.end() != it)
+	{
+		p_st_tconverted tmsg = *it;
+		char sql[1024] = { 0 };
+		sprintf_s(sql, 1024, "insert into t_converted (fileid, time, node, txtstatus, pagenumber) values (%d, datetime('now','localtime'), '%s', '%d', '%d');",
+			tmsg->fileid, tmsg->node, tmsg->txtstatus+1, tmsg->pagenumber);
+		CMylock mylock(m_csTConvert);
+		nRows = m_pDb->execDML(sql);
+		delete tmsg;
+		tmsg = NULL;
+		it++;
+	}
+	listmsg.clear();
+	return nRows;
+}
+
+#endif
 
 //////////////////////////////////////////////////////////////////////////
 int CConnectDB::insert_convert_success_table(p_st_tconverted tmsg)

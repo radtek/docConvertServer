@@ -89,21 +89,22 @@ int CGetConvertDataThread::Run()
 			{
 				g_mtxConvert.Lock();
 				g_ltConvert.push_back(*it);
+				int bok = CConnectDB::GetInstance()->update_convert_table((p_st_tconvert)*it);
 				g_mtxConvert.Unlock();
 				it++;
 			}
 			templist.clear();
 		}
-		if (templist.size() > 0)
-		{
-			list<p_st_tconvert>::iterator it = templist.begin();
-			while (it != templist.end())
-			{
-				int bok = CConnectDB::GetInstance()->update_convert_table((p_st_tconvert)*it);
-				it++;
-			}
-			templist.clear();
-		}
+// 		if (templist.size() > 0)
+// 		{
+// 			list<p_st_tconvert>::iterator it = templist.begin();
+// 			while (it != templist.end())
+// 			{
+// 				int bok = CConnectDB::GetInstance()->update_convert_table((p_st_tconvert)*it);
+// 				it++;
+// 			}
+// 			templist.clear();
+// 		}
 
 	}
 
