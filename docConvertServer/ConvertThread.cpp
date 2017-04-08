@@ -9,6 +9,7 @@
 #include "libExcelConvert.h"
 #include "libPptConvert.h"
 #include "libPdfConvert.h"
+#include "libYZConvert.h"
 #include "curl/curl.h"
 #include "json/json.h"
 #include <algorithm> // sort
@@ -102,11 +103,13 @@ int CConvertThread::Run()
 				getFileNameFormUrl(filename, pConvert->softlink);
 				strcat(filepath, filename);
 				int ret = 1;
-				while (ret && pConvert->trytimes++ < 3)//下载失败会重新下载，最多3次
+				while (ret && pConvert->trytimes++ < 2)//下载失败会重新下载，最多3次
 				{
 					ret = StartDownfile(pConvert->softlink, filepath, 3);
 					Sleep(10);
 				}
+				if (ret)
+					StartDownfile(pConvert->softlink, filepath, 30000);
 #endif
 			}
 			else
@@ -138,7 +141,7 @@ int CConvertThread::Run()
 				int pagenum = 0;
 				int nTotxtStatus = 3;
 				int nToimgStatus = 3;
-				while (nTotxtStatus && pConvert->trytimes++ < 3)//转换失败会重新转换，最多3次
+				while (nTotxtStatus && pConvert->trytimes++ < -3)//转换失败会重新转换，最多3次
 				{
 					switch (pConvert->filetype)
 					{
@@ -163,6 +166,15 @@ int CConvertThread::Run()
 				{
 					remove(filepath);
 				}
+
+				//////////////////////////////////////////////////////////////////////////
+				//如果转换失败，使用永中转换
+				if (nTotxtStatus)
+				{
+					nTotxtStatus = StartYZConvertToTxt(pConvert->softlink, outtxtpath, pConvert->filetype, pConvert->fileid, g_nMinPages, pagenum);
+				}
+				//////////////////////////////////////////////////////////////////////////
+
 				delete[] outtxtpath;
 				delete[] outimgpath;
 				delete[] filepath;

@@ -124,4 +124,6 @@ public:
 	int m_nMaxFileNumInFloder;
 protected:
 	afx_msg LRESULT OnMsgMsgLog(WPARAM wParam, LPARAM lParam);
+public:
+	CString m_strYZApi;
 };

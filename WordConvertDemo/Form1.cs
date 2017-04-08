@@ -101,6 +101,9 @@ namespace WordConvertDemo
                     //                 reader.Read(buffer, 0, 0x5000);
                     //                 string context = new string(buffer);
                     string context = reader.ReadToEnd();
+
+                    calcWords(context);
+
                     context = Regex.Replace(context, "\n\r", " ", RegexOptions.IgnoreCase);
 
                     try
@@ -127,6 +130,33 @@ namespace WordConvertDemo
             {
                 return 2;
             }
+        }
+
+
+        private void calcWords(string words)
+        {
+            int iAllChr = 0; //字符总数：不计字符'\n'和'\r'
+            int iChineseChr = 0; //中文字符计数
+            int iChinesePnct = 0;//中文标点计数
+            int iEnglishChr = 0; //英文字符计数
+            int iEnglishPnct = 0;//中文标点计数
+            int iNumber = 0;  //数字字符：0-9
+            foreach (char ch in words)
+            {
+                if (ch != '\n' && ch != '\r') iAllChr++;
+                if ("～！＠＃￥％…＆（）—＋－＝".IndexOf(ch) != -1 ||
+                 "｛｝【】：“”；‘'《》，。、？｜＼".IndexOf(ch) != -1) iChinesePnct++;
+                if (ch >= 0x4e00 && ch <= 0x9fbb) iChineseChr++;
+                if ("`~!@#$%^&*()_+-={}[]:\";'<>,.?/\\|".IndexOf(ch) != -1) iEnglishPnct++;
+                if ((ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z')) iEnglishChr++;
+                if (ch >= '0' && ch <= '9') iNumber++;
+            }
+            string sStats = string.Format(string.Concat(
+             "字符总数：{0}\r\n", "中文字符数：{1}\r\n", "中文标点数：{2}\r\n",
+             "英文字符数：{3}\r\n", "英文标点数：{4}\r\n", "数字字符数：{5}\r\n"),
+             iAllChr.ToString(), iChineseChr.ToString(), iEnglishChr.ToString(),
+             iEnglishChr.ToString(), iEnglishPnct.ToString(), iNumber.ToString());
+            MessageBox.Show(sStats);
         }
     }
 }

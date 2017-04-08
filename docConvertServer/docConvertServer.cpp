@@ -44,6 +44,7 @@ char* g_strTxtHttpHead;
 char* g_strImgPath;
 char* g_strImgHttpHead;
 char* g_strLogPath;
+char* g_strYZApi;
 BOOL g_bIsDelSrc;
 BOOL g_bIsToImg;
 int g_nConvertTimeOut;
@@ -163,6 +164,7 @@ void CdocConvertServerApp::InitGlobalData()
 	g_strApiUrl = new char[1024];
 	g_strSuccessUrl = new char[1024];
 	g_strFailedUrl = new char[1024];
+	g_strYZApi = new char[1024];
 	g_nMinPages = 0;
 	g_strDownPath = new char[1024];
 	g_strTxtPath = new char[1024];
@@ -183,6 +185,7 @@ void CdocConvertServerApp::ReleaseGlobalData()
 	delete[] g_strApiUrl;
 	delete[] g_strSuccessUrl;
 	delete[] g_strFailedUrl;
+	delete[] g_strYZApi;
 	delete[] g_strDownPath;
 	delete[] g_strTxtPath;
 	delete[] g_strTxtHttpHead;

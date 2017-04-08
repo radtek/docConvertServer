@@ -164,8 +164,8 @@ FPDFBitmap_Destroy pFPDFBitmapDestroy;
 
 
 
-HINSTANCE hdll;
-static int g_nImgPageNum;
+HINSTANCE hdll = NULL;
+static int g_nImgPageNum = 0;
 
 
 int InitFPdfSdk();
@@ -1087,7 +1087,10 @@ int _tmain(int argc, _TCHAR* argv[])
 {
 	if (argc == 10)
 	{
-		InitFPdfSdk();
+		if (InitFPdfSdk())
+		{
+			return 0;
+		}
 
 		char c_pdffile[STRSIZE] = { 0 };
 		char strtxtpath[STRSIZE] = { 0 };
@@ -1164,7 +1167,16 @@ int _tmain(int argc, _TCHAR* argv[])
 #endif
 		int pageNum = 0;
 		int istoimgstatus = 0;
-		int status = ConvertPdfToTxt(c_pdffile, strtxtpath, strimgpath, fileid, minpage, txtsize, pageNum, istoimg, isoriginal, istoimgstatus);
+		int status = 3;
+		try
+		{
+			status = ConvertPdfToTxt(c_pdffile, strtxtpath, strimgpath,
+				fileid, minpage, txtsize, pageNum, istoimg, isoriginal, istoimgstatus);
+		}
+		catch (...)
+		{
+			status = 3;
+		}
 #if 0
 		GetNowTime(now);
 		printf("end %s \n", now);
@@ -1176,7 +1188,8 @@ int _tmain(int argc, _TCHAR* argv[])
 		Sleep(50);
 
 		pdf_destroy();
-		FreeLibrary(hdll);
+		if(hdll)
+			FreeLibrary(hdll);
 
 #if 0
 		getchar();

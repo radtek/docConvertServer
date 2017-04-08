@@ -78,6 +78,7 @@ CdocConvertServerDlg::CdocConvertServerDlg(CWnd* pParent /*=NULL*/)
 	, m_bIsDownfile(FALSE)
 	, m_bIsToImg(FALSE)
 	, m_nMaxFileNumInFloder(0)
+	, m_strYZApi(_T(""))
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 	m_pGetApiThread = NULL;
@@ -117,6 +118,7 @@ void CdocConvertServerDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Check(pDX, IDC_CK_ISTOIMG, m_bIsToImg);
 	DDX_Control(pDX, IDC_LIST3, m_wndListCtrlDomain);
 	DDX_Text(pDX, IDC_MAXFILENUM, m_nMaxFileNumInFloder);
+	DDX_Text(pDX, IDC_YZ_API, m_strYZApi);
 }
 
 BEGIN_MESSAGE_MAP(CdocConvertServerDlg, CDialogEx)
@@ -312,6 +314,7 @@ void CdocConvertServerDlg::ReadIni()
 // 	::GetPrivateProfileStringA("CONFIG", "IMGHTTPHEAD", "", g_strImgHttpHead, 1024, g_strInifile);
 	::GetPrivateProfileStringA("CONFIG", "LOGPATH", "", g_strLogPath, 1024, g_strInifile);
 	::GetPrivateProfileStringA("CONFIG", "DOWNPATH", "", g_strDownPath, 1024, g_strInifile);
+	::GetPrivateProfileStringA("CONFIG", "YZAPI", "", g_strYZApi, 1024, g_strInifile);
 
 	g_nConvertTimeOut = ::GetPrivateProfileIntA("CONFIG", "CONVERTTIMEOUT", 1000, g_strInifile);
 	g_nThreadNumber = ::GetPrivateProfileIntA("CONFIG", "THREADNUM", 1, g_strInifile);
@@ -327,6 +330,7 @@ void CdocConvertServerDlg::ReadIni()
 	m_strGetApi = CharToCString(g_strApiUrl);
 	m_strSuccessApi = CharToCString(g_strSuccessUrl);
 	m_strFailedApi = CharToCString(g_strFailedUrl);
+	m_strYZApi = CharToCString(g_strYZApi);
 	m_strTxtSavePath = CharToCString(g_strTxtPath);
 	m_strTxtHttp = CharToCString(g_strTxtHttpHead);
 	m_strImgSavePath = CharToCString(g_strImgPath);
@@ -416,6 +420,15 @@ void CdocConvertServerDlg::WriteIni()
 		strcpy(g_strFailedUrl, temp);
 		g_strFailedUrl[strlen(temp)] = '\0';
 		::WritePrivateProfileStringA("CONFIG", "FAILEDURL", g_strFailedUrl, g_strInifile);
+	}
+	delete[] temp;
+
+	temp = CStringToChar(m_strYZApi);
+	if (strcmp(temp, g_strYZApi) != 0)
+	{
+		strcpy(g_strYZApi, temp);
+		g_strYZApi[strlen(temp)] = '\0';
+		::WritePrivateProfileStringA("CONFIG", "YZAPI", g_strYZApi, g_strInifile);
 	}
 	delete[] temp;
 
@@ -668,6 +681,22 @@ void CdocConvertServerDlg::DrawWindow()
 	r6.bottom = r6.top + 22;
 	GetDlgItem(IDC_LOGPATH)->MoveWindow(r6);
 
+	//
+	GetDlgItem(IDC_STATIC_YZAPI)->GetClientRect(&r5);
+	r5.left = r3.left;
+	r5.right = r3.right;
+	r5.top = r6.bottom + 10;
+	r5.bottom = r5.top + 22;
+	GetDlgItem(IDC_STATIC_YZAPI)->MoveWindow(r5);
+
+	GetDlgItem(IDC_YZ_API)->GetClientRect(&r6);
+	r6.left = r4.left;
+	r6.right = r4.right;
+	r6.top = r5.top;
+	r6.bottom = r6.top + 22;
+	GetDlgItem(IDC_YZ_API)->MoveWindow(r6);
+
+
 	/*
 	//
 	GetDlgItem(IDC_STATIC_TXTSAVEPATH)->GetClientRect(&r3);
@@ -901,6 +930,8 @@ void CdocConvertServerDlg::UpTableShow()
 		GetDlgItem(IDC_FAILED_API)->ShowWindow(SW_HIDE);
 		GetDlgItem(IDC_STATIC_FILEPATH)->ShowWindow(SW_HIDE);
 		GetDlgItem(IDC_FILEPATH)->ShowWindow(SW_HIDE);
+		GetDlgItem(IDC_STATIC_YZAPI)->ShowWindow(SW_HIDE);
+		GetDlgItem(IDC_YZ_API)->ShowWindow(SW_HIDE);
 
 		GetDlgItem(IDC_TXTSAVEPATH)->ShowWindow(SW_HIDE);
 		GetDlgItem(IDC_STATIC_TXTSAVEPATH)->ShowWindow(SW_HIDE);
@@ -951,6 +982,8 @@ void CdocConvertServerDlg::UpTableShow()
 		GetDlgItem(IDC_FAILED_API)->ShowWindow(SW_SHOW);
 		GetDlgItem(IDC_STATIC_FILEPATH)->ShowWindow(SW_SHOW);
 		GetDlgItem(IDC_FILEPATH)->ShowWindow(SW_SHOW);
+		GetDlgItem(IDC_STATIC_YZAPI)->ShowWindow(SW_SHOW);
+		GetDlgItem(IDC_YZ_API)->ShowWindow(SW_SHOW);
 
 // 		GetDlgItem(IDC_TXTSAVEPATH)->ShowWindow(SW_SHOW);
 // 		GetDlgItem(IDC_STATIC_TXTSAVEPATH)->ShowWindow(SW_SHOW);

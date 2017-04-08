@@ -48,6 +48,7 @@ extern char* g_strTxtHttpHead;
 extern char* g_strImgPath;
 extern char* g_strImgHttpHead;
 extern char* g_strLogPath;
+extern char* g_strYZApi;
 extern BOOL g_bIsDelSrc;
 extern BOOL g_bIsToImg;
 extern int g_nConvertTimeOut;

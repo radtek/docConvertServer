@@ -16,6 +16,7 @@ namespace wordtotxtpng
 {
     class Program
     {
+        #region define
         enum OutStatus
         {
             ConvertSuccess,//0:转换成功
@@ -50,6 +51,7 @@ namespace wordtotxtpng
         static int maxtxtsize;
         static int istoimg;
         static int isoriginal;
+        #endregion
 
         static void Main(string[] args)
         {
